@@ -1,11 +1,13 @@
 import { Context } from "telegraf";
 import { UserService } from "@/services/user.service";
 import { ScheduleService } from "@/services/schedule.service";
+import { MessageService } from "@/services/message.service";
 import { formatScheduleList } from "@/utils/formatScheduleList";
 
 export interface UserCommandsHandlerDependencies {
   userService: UserService;
   scheduleService: ScheduleService;
+  messageService: MessageService;
 }
 
 export class UserCommandsHandler {
@@ -17,7 +19,8 @@ export class UserCommandsHandler {
 
     const user = await this.deps.userService.findByChatId(chatId);
     if (!user) {
-      await ctx.reply(
+      await this.deps.messageService.sendMessage(
+        chatId,
         `Привет, кажется мы не знакомы. Чтобы начать, пожалуйста, отправь команду /start`
       );
       return;
@@ -30,6 +33,6 @@ export class UserCommandsHandler {
     const allSchedules = schedules
       .map((schedule) => formatScheduleList(schedule, timezone))
       .join("\n\n");
-    await ctx.reply(allSchedules, { parse_mode: "MarkdownV2" });
+    await this.deps.messageService.sendMarkdownV2(chatId, allSchedules);
   }
 }

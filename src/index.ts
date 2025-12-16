@@ -9,6 +9,7 @@ import { AIService } from "./services/ai.service";
 import { AiRequestService } from "./services/aiRequest.service";
 import { GraphileWorkerService } from "./services/graphileWorker.service";
 import { SettingService } from "./services/setting.service";
+import { MessageService } from "./services/message.service";
 import { createAiRequestTask } from "./workers/ai-request.worker";
 import { createAiResultTask } from "./workers/ai-result.worker";
 import { createScheduleReminderTask } from "./workers/schedule-reminder.worker";
@@ -46,6 +47,8 @@ async function main() {
     settingService,
   });
 
+  const messageService = new MessageService(bot);
+
   // Initialize schedule action processor
   const scheduleActionProcessor = new ScheduleActionProcessor({
     scheduleService,
@@ -55,12 +58,12 @@ async function main() {
 
   // Initialize AI result processor
   const aiResultProcessor = new AiResultProcessor({
-    bot,
     userService,
     focusService,
     chatMessageService,
     scheduleService,
     scheduleActionProcessor,
+    messageService,
   });
 
   // Start Graphile Worker with task list
@@ -71,14 +74,18 @@ async function main() {
       graphileWorkerService,
       bot
     ),
-    "ai-result": createAiResultTask(aiRequestService, aiResultProcessor, bot),
+    "ai-result": createAiResultTask(
+      aiRequestService,
+      aiResultProcessor,
+      messageService
+    ),
     "schedule-reminder": createScheduleReminderTask(
       scheduleService,
       chatMessageService,
       focusService,
       userService,
       graphileWorkerService,
-      bot
+      messageService
     ),
   };
 

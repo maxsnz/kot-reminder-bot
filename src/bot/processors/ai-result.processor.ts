@@ -1,9 +1,9 @@
-import { Telegraf } from "telegraf";
 import { AiRequest } from "@/prisma/generated/client";
 import { UserService } from "@/services/user.service";
 import { FocusService } from "@/services/focus.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { ScheduleService } from "@/services/schedule.service";
+import { MessageService } from "@/services/message.service";
 import { ScheduleActionProcessor } from "./schedule-action.processor";
 import { MessageRole } from "@/prisma/generated/client";
 import { formatScheduleConfirmation } from "@/utils/formatScheduleConfirmation";
@@ -11,12 +11,12 @@ import { formatScheduleList } from "@/utils/formatScheduleList";
 import { logger } from "@/utils/logger";
 
 export interface AiResultProcessorDependencies {
-  bot: Telegraf;
   userService: UserService;
   focusService: FocusService;
   chatMessageService: ChatMessageService;
   scheduleService: ScheduleService;
   scheduleActionProcessor: ScheduleActionProcessor;
+  messageService: MessageService;
 }
 
 export class AiResultProcessor {
@@ -96,13 +96,11 @@ export class AiResultProcessor {
         const allSchedules = schedules
           .map((schedule) => formatScheduleList(schedule, timezone))
           .join("\n\n");
-        await this.deps.bot.telegram.sendMessage(chatId, allSchedules, {
-          parse_mode: "MarkdownV2",
-        });
+        await this.deps.messageService.sendMarkdownV2(chatId, allSchedules);
       }
 
       if (result.response) {
-        await this.deps.bot.telegram.sendMessage(chatId, result.response);
+        await this.deps.messageService.sendMessage(chatId, result.response);
       }
 
       if (scheduleForConfirmation && user.timezone) {
@@ -111,7 +109,7 @@ export class AiResultProcessor {
           user.timezone,
           scheduleForConfirmation.action
         );
-        await this.deps.bot.telegram.sendMessage(chatId, confirmationMessage);
+        await this.deps.messageService.sendMessage(chatId, confirmationMessage);
       }
     } catch (error) {
       logger.error(

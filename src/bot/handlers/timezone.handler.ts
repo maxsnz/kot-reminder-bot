@@ -1,8 +1,10 @@
 import { Context } from "telegraf";
 import { UserService } from "@/services/user.service";
+import { MessageService } from "@/services/message.service";
 
 export interface TimezoneHandlerDependencies {
   userService: UserService;
+  messageService: MessageService;
 }
 
 export class TimezoneHandler {
@@ -16,7 +18,8 @@ export class TimezoneHandler {
     if (!user) return;
 
     await this.deps.userService.updateUser(user.id, { timezone: null });
-    await ctx.reply(
+    await this.deps.messageService.sendMessage(
+      chatId,
       `Пожалуйста, напиши мне где ты находишься, мне хватит города и страны`
     );
   }

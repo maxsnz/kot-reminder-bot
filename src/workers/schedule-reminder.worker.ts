@@ -1,10 +1,10 @@
 import { Task } from "graphile-worker";
-import { Telegraf } from "telegraf";
 import { ScheduleService } from "@/services/schedule.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { FocusService } from "@/services/focus.service";
 import { UserService } from "@/services/user.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
+import { MessageService } from "@/services/message.service";
 import { getNextRunAt } from "@/utils/getNextRunAt";
 import { MessageRole, StatusKind } from "@/prisma/generated/client";
 import { logger } from "@/utils/logger";
@@ -20,7 +20,7 @@ export function createScheduleReminderTask(
   focusService: FocusService,
   userService: UserService,
   graphileWorkerService: GraphileWorkerService,
-  bot: Telegraf
+  messageService: MessageService
 ): Task {
   return async (payload: unknown, helpers) => {
     const jobData = payload as ScheduleReminderJobData;
@@ -52,7 +52,7 @@ export function createScheduleReminderTask(
 
       let telegramMessageId: number | undefined;
       try {
-        const sentMessage = await bot.telegram.sendMessage(
+        const sentMessage = await messageService.sendMessage(
           user.chatId,
           `${schedule.emoji ?? ""} ${schedule.message}`
         );

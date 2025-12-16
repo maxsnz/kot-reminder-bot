@@ -2,6 +2,7 @@ import { Context } from "telegraf";
 import { UserService } from "@/services/user.service";
 import { FocusService } from "@/services/focus.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
+import { MessageService } from "@/services/message.service";
 import { getUserSchedulePrompt } from "@/bot/prompt";
 import { getUserTime } from "@/utils/getUserTime";
 import { MessageRole } from "@/prisma/generated/client";
@@ -17,6 +18,7 @@ export interface TextMessageHandlerDependencies {
   scheduleService: ScheduleService;
   aiRequestService: AiRequestService;
   graphileWorkerService: GraphileWorkerService;
+  messageService: MessageService;
 }
 
 export class TextMessageHandler {
@@ -32,7 +34,8 @@ export class TextMessageHandler {
 
       const user = await this.deps.userService.findByChatId(chatId);
       if (!user) {
-        await ctx.reply(
+        await this.deps.messageService.sendMessage(
+          chatId,
           `Привет, кажется мы не знакомы. Чтобы начать, пожалуйста, отправь команду /start`
         );
         return;
@@ -114,9 +117,13 @@ export class TextMessageHandler {
         },
         "Error handling text message"
       );
-      await ctx.reply(
-        `Ошибка: ${e instanceof Error ? e.message : "Неизвестная ошибка"}`
-      );
+      const chatId = ctx.message?.chat.id;
+      if (chatId) {
+        await this.deps.messageService.sendMessage(
+          chatId,
+          `Ошибка: ${e instanceof Error ? e.message : "Неизвестная ошибка"}`
+        );
+      }
     }
   }
 }

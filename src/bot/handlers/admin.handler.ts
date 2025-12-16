@@ -1,6 +1,7 @@
 import { Context } from "telegraf";
 import { UserService } from "@/services/user.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
+import { MessageService } from "@/services/message.service";
 import { generateObjectsTable } from "@/utils/generateTable";
 import { env } from "@/config/env";
 import { AiRequestService } from "@/services/aiRequest.service";
@@ -13,6 +14,7 @@ export interface AdminHandlerDependencies {
   chatMessageService: ChatMessageService;
   aiRequestService: AiRequestService;
   settingService: SettingService;
+  messageService: MessageService;
 }
 
 export class AdminHandler {
@@ -30,15 +32,19 @@ export class AdminHandler {
     if (!(await this.isAdmin(ctx))) return;
 
     const users = await this.deps.userService.getAllUsers();
+    const chatId = ctx.message?.chat.id;
+    if (!chatId) return;
+
     const usersData = generateObjectsTable(
       users.map((user) => ({
         username: user.username,
         chatId: user.chatId,
       }))
     );
-    await ctx.reply("```\n" + usersData + "\n```", {
-      parse_mode: "MarkdownV2",
-    });
+    await this.deps.messageService.sendMarkdownV2(
+      chatId,
+      "```\n" + usersData + "\n```"
+    );
   }
 
   async handleMessages(ctx: Context) {
@@ -63,9 +69,10 @@ export class AdminHandler {
         telegramReplyToId: message.telegramReplyToId,
       }))
     );
-    await ctx.reply("```\n" + messagesData + "\n```", {
-      parse_mode: "MarkdownV2",
-    });
+    await this.deps.messageService.sendMarkdownV2(
+      chatId,
+      "```\n" + messagesData + "\n```"
+    );
   }
 
   async handleAiRequests(ctx: Context) {
@@ -89,28 +96,41 @@ export class AdminHandler {
         cost: request.cost,
       }))
     );
-    await ctx.reply("```\n" + requestsData + "\n```", {
-      parse_mode: "MarkdownV2",
-    });
+    await this.deps.messageService.sendMarkdownV2(
+      chatId,
+      "```\n" + requestsData + "\n```"
+    );
   }
 
   async handleHealth(ctx: Context) {
     if (!(await this.isAdmin(ctx))) return;
 
-    await ctx.reply("OK");
+    const chatId = ctx.message?.chat.id;
+    if (!chatId) return;
+
+    await this.deps.messageService.sendMessage(chatId, "OK");
   }
 
   async handleVersion(ctx: Context) {
     if (!(await this.isAdmin(ctx))) return;
+
+    const chatId = ctx.message?.chat.id;
+    if (!chatId) return;
 
     try {
       const packageJsonPath = join(process.cwd(), "package.json");
       const packageJson = JSON.parse(
         readFileSync(packageJsonPath, "utf-8")
       ) as { version: string };
-      await ctx.reply(`Version: ${packageJson.version}`);
+      await this.deps.messageService.sendMessage(
+        chatId,
+        `Version: ${packageJson.version}`
+      );
     } catch (error) {
-      await ctx.reply("Failed to read version");
+      await this.deps.messageService.sendMessage(
+        chatId,
+        "Failed to read version"
+      );
     }
   }
 
@@ -121,10 +141,16 @@ export class AdminHandler {
       ctx.message && "text" in ctx.message ? ctx.message.text : "";
     if (!messageText) return;
 
+    const chatId = ctx.message?.chat.id;
+    if (!chatId) return;
+
     // Parse command: /settings -set key:value or /settings -get key
     const parts = messageText.trim().split(/\s+/);
     if (parts.length < 3) {
-      await ctx.reply("Usage:\n/settings -set key:value\n/settings -get key");
+      await this.deps.messageService.sendMessage(
+        chatId,
+        "Usage:\n/settings -set key:value\n/settings -get key"
+      );
       return;
     }
 
@@ -135,7 +161,10 @@ export class AdminHandler {
       // Parse key:value
       const colonIndex = arg.indexOf(":");
       if (colonIndex === -1) {
-        await ctx.reply("Invalid format. Use: key:value");
+        await this.deps.messageService.sendMessage(
+          chatId,
+          "Invalid format. Use: key:value"
+        );
         return;
       }
 
@@ -143,27 +172,45 @@ export class AdminHandler {
       const value = arg.substring(colonIndex + 1);
 
       if (!key || !value) {
-        await ctx.reply("Key and value cannot be empty");
+        await this.deps.messageService.sendMessage(
+          chatId,
+          "Key and value cannot be empty"
+        );
         return;
       }
 
       await this.deps.settingService.setValue(key, value);
-      await ctx.reply(`Setting "${key}" set to "${value}"`);
+      await this.deps.messageService.sendMessage(
+        chatId,
+        `Setting "${key}" set to "${value}"`
+      );
     } else if (action === "-get") {
       const key = arg;
       if (!key) {
-        await ctx.reply("Key cannot be empty");
+        await this.deps.messageService.sendMessage(
+          chatId,
+          "Key cannot be empty"
+        );
         return;
       }
 
       const value = await this.deps.settingService.getValue(key);
       if (value === null) {
-        await ctx.reply(`Setting "${key}" not found`);
+        await this.deps.messageService.sendMessage(
+          chatId,
+          `Setting "${key}" not found`
+        );
       } else {
-        await ctx.reply(`Setting "${key}" = "${value}"`);
+        await this.deps.messageService.sendMessage(
+          chatId,
+          `Setting "${key}" = "${value}"`
+        );
       }
     } else {
-      await ctx.reply("Invalid action. Use -set or -get");
+      await this.deps.messageService.sendMessage(
+        chatId,
+        "Invalid action. Use -set or -get"
+      );
     }
   }
 }

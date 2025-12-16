@@ -2,6 +2,7 @@ import { Context } from "telegraf";
 import { UserService } from "@/services/user.service";
 import { FocusService } from "@/services/focus.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
+import { MessageService } from "@/services/message.service";
 import { getFullName, getUsername } from "@/utils/getUsername";
 import { MessageRole } from "@/prisma/generated/client";
 import { logger } from "@/utils/logger";
@@ -10,6 +11,7 @@ export interface StartHandlerDependencies {
   userService: UserService;
   focusService: FocusService;
   chatMessageService: ChatMessageService;
+  messageService: MessageService;
 }
 
 export class StartHandler {
@@ -38,8 +40,10 @@ export class StartHandler {
       focusId: focus.id,
     });
 
-    const response = await ctx.reply(
-      `Привет, ${fullName}! \nЯ могу помочь тебе устанавливать напоминания о важных событиях. Чтобы начать, пожалуйста, напиши мне где ты находишься, мне хватит города и страны`
+    const messageText = `Привет, ${fullName}! \nЯ могу помочь тебе устанавливать напоминания о важных событиях. Чтобы начать, пожалуйста, напиши мне где ты находишься, мне хватит города и страны`;
+    const response = await this.deps.messageService.sendMessage(
+      chatId,
+      messageText
     );
     logger.debug({ response: response.text }, "Start command response sent");
 

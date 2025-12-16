@@ -1,7 +1,7 @@
 import { Task } from "graphile-worker";
-import { Telegraf } from "telegraf";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { AiResultProcessor } from "@/bot/processors/ai-result.processor";
+import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
 
 interface AiResultJobData {
@@ -11,7 +11,7 @@ interface AiResultJobData {
 export function createAiResultTask(
   aiRequestService: AiRequestService,
   aiResultProcessor: AiResultProcessor,
-  bot: Telegraf
+  messageService: MessageService
 ): Task {
   return async (payload: unknown, helpers) => {
     const jobData = payload as AiResultJobData;
@@ -81,7 +81,10 @@ export function createAiResultTask(
             const promptData = aiRequest.prompt as any;
             const chatId = promptData?.chatId as number;
             if (chatId) {
-              await bot.telegram.sendMessage(chatId, `Ошибка: ${errorMessage}`);
+              await messageService.sendMessage(
+                chatId,
+                `Ошибка: ${errorMessage}`
+              );
             }
           }
         } catch (sendError) {
