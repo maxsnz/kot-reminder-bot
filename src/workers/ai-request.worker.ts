@@ -130,6 +130,14 @@ export function createAiRequestTask(
         "Failed to process AI request"
       );
 
+      // Check if this is a parsing error (permanent, shouldn't retry)
+      const isParsingError =
+        errorMessage.includes("validation failed") ||
+        errorMessage.includes("Response validation failed") ||
+        errorMessage.toLowerCase().includes("invalid date") ||
+        errorMessage.toLowerCase().includes("parsing") ||
+        errorMessage.includes("JSON.parse");
+
       try {
         await aiRequestService.markFailed(aiRequestId, errorMessage);
       } catch (updateError) {
@@ -145,6 +153,19 @@ export function createAiRequestTask(
         );
       }
 
+      // For parsing errors, don't retry - return instead of throwing
+      if (isParsingError) {
+        logger.warn(
+          {
+            aiRequestId,
+            errorMessage,
+          },
+          "Parsing error detected in AI request, not retrying"
+        );
+        return; // Don't throw, so Graphile Worker won't retry
+      }
+
+      // For transient errors (network, etc.), allow retries
       throw error;
     } finally {
       if (typingInterval) {

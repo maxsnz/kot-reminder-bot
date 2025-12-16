@@ -244,6 +244,17 @@ enum ScheduleFrequency {
   monthly = "monthly",
   yearly = "yearly",
 }
+
+const timeStringSchema = z.string().regex(/^([01][0-9]|2[0-3]):[0-5][0-9]$/, {
+  message: 'Time must be in format "HH:MM" (e.g., "10:00", "12:00")',
+});
+
+const dateStringSchema = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/, {
+    message: 'Date must be in format "YYYY-MM-DD" (e.g., "2026-06-01")',
+  });
+
 const OneTimeSchedule = z.object({
   message: z.string(),
   summary: z.string(),
@@ -251,8 +262,8 @@ const OneTimeSchedule = z.object({
   timeSummary: z.string(),
   actionSummary: z.string(),
   kind: z.literal(ScheduleKind.one_time),
-  runAtDates: z.array(z.string()),
-  runAtTimes: z.array(z.string()),
+  runAtDates: z.array(dateStringSchema),
+  runAtTimes: z.array(timeStringSchema),
 });
 
 const RecurringSchedule = z.object({
@@ -264,9 +275,9 @@ const RecurringSchedule = z.object({
   kind: z.literal(ScheduleKind.recurring),
   frequency: z.nativeEnum(ScheduleFrequency).optional().nullable(),
   intervalStep: z.number(),
-  startAtDate: z.string().optional().nullable(),
-  endAtDate: z.string().optional().nullable(),
-  timesOfDay: z.array(z.string()),
+  startAtDate: dateStringSchema.optional().nullable(),
+  endAtDate: dateStringSchema.optional().nullable(),
+  timesOfDay: z.array(timeStringSchema),
   daysOfWeek: z.array(z.number()),
   daysOfMonth: z.array(z.number()),
   monthsOfYear: z.array(z.number()),
@@ -302,16 +313,16 @@ export const ResultUpdateSchedule = z.object({
   action: z.literal("update_schedule"),
   scheduleId: z.string(),
   patch: z.object({
-    runAtTimes: z.array(z.string()).optional().nullable(),
-    runAtDates: z.array(z.string()).optional().nullable(),
-    timesOfDay: z.array(z.string()).optional().nullable(),
+    runAtTimes: z.array(timeStringSchema).optional().nullable(),
+    runAtDates: z.array(dateStringSchema).optional().nullable(),
+    timesOfDay: z.array(timeStringSchema).optional().nullable(),
     daysOfWeek: z.array(z.number()).optional().nullable(),
     daysOfMonth: z.array(z.number()).optional().nullable(),
     monthsOfYear: z.array(z.number()).optional().nullable(),
-    startAtDate: z.string().optional().nullable(),
+    startAtDate: dateStringSchema.optional().nullable(),
     frequency: z.nativeEnum(ScheduleFrequency).optional().nullable(),
     intervalStep: z.number().optional().nullable(),
-    endAtDate: z.string().optional().nullable(),
+    endAtDate: dateStringSchema.optional().nullable(),
     message: z.string().optional().nullable(),
     summary: z.string(),
     timeSummary: z.string(),

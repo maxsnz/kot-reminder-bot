@@ -96,7 +96,11 @@ export class AIService {
     // Validate response
     const validationResult = Response.safeParse(parsedResponse);
     if (!validationResult.success) {
-      throw new Error("Response validation failed:", validationResult.error);
+      throw new Error(
+        `Response validation failed: ${JSON.stringify(
+          validationResult.error.issues
+        )}`
+      );
     }
 
     return {

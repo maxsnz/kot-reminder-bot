@@ -51,6 +51,9 @@ export function createAiResultTask(
         "AI result processed successfully"
       );
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
       logger.error(
         {
           err: error instanceof Error ? error : new Error(String(error)),
@@ -59,32 +62,55 @@ export function createAiResultTask(
         "Failed to process AI result"
       );
 
-      try {
-        if (!aiRequest) {
-          aiRequest = await aiRequestService.findById(aiRequestId);
-        }
-        if (aiRequest) {
-          const promptData = aiRequest.prompt as any;
-          const chatId = promptData?.chatId as number;
-          if (chatId) {
-            const errorMessage =
-              error instanceof Error ? error.message : "Неизвестная ошибка";
-            await bot.telegram.sendMessage(chatId, `Ошибка: ${errorMessage}`);
+      // Check if this is a parsing error (permanent, shouldn't retry)
+      const isParsingError =
+        errorMessage.includes("Invalid time value") ||
+        errorMessage.includes("validation failed") ||
+        errorMessage.includes("Response validation failed") ||
+        errorMessage.toLowerCase().includes("invalid date") ||
+        errorMessage.toLowerCase().includes("parsing");
+
+      // Only send error message on first attempt
+      const attemptNumber = (helpers.job as any)?.attempt_number ?? 1;
+      if (attemptNumber === 1) {
+        try {
+          if (!aiRequest) {
+            aiRequest = await aiRequestService.findById(aiRequestId);
           }
+          if (aiRequest) {
+            const promptData = aiRequest.prompt as any;
+            const chatId = promptData?.chatId as number;
+            if (chatId) {
+              await bot.telegram.sendMessage(chatId, `Ошибка: ${errorMessage}`);
+            }
+          }
+        } catch (sendError) {
+          logger.error(
+            {
+              err:
+                sendError instanceof Error
+                  ? sendError
+                  : new Error(String(sendError)),
+              aiRequestId,
+            },
+            "Failed to send error message to user"
+          );
         }
-      } catch (sendError) {
-        logger.error(
-          {
-            err:
-              sendError instanceof Error
-                ? sendError
-                : new Error(String(sendError)),
-            aiRequestId,
-          },
-          "Failed to send error message to user"
-        );
       }
 
+      // For parsing errors, don't retry - return instead of throwing
+      if (isParsingError) {
+        logger.warn(
+          {
+            aiRequestId,
+            errorMessage,
+          },
+          "Parsing error detected, not retrying"
+        );
+        return; // Don't throw, so Graphile Worker won't retry
+      }
+
+      // For transient errors, allow retries
       throw error;
     }
   };
