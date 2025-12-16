@@ -67,7 +67,7 @@ export const startBot = (deps: BotDependencies) => {
   bot.command("health", (ctx) => adminHandler.handleHealth(ctx));
   bot.command("version", (ctx) => adminHandler.handleVersion(ctx));
   bot.command("settings", (ctx) => adminHandler.handleSettings(ctx));
-  bot.command("remove-all-my-tasks", (ctx) =>
+  bot.command("removeallmytasks", (ctx) =>
     adminHandler.handleRemoveAllMyTasks(ctx)
   );
 
