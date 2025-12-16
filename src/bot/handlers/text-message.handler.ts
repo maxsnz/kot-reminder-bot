@@ -94,7 +94,14 @@ export class TextMessageHandler {
         },
       });
 
-      logger.info({ aiRequestId: aiRequest.id }, "Created AiRequest");
+      logger.info(
+        {
+          aiRequestId: aiRequest.id,
+          model: "gpt-5-nano",
+          prompt: prompt,
+        },
+        "Created AiRequest"
+      );
 
       // Send job to ai-request queue
       await this.deps.graphileWorkerService.addJob("ai-request", {

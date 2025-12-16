@@ -109,6 +109,7 @@ export function createAiRequestTask(
           },
           cost,
           model,
+          result: aiResponse.result,
         },
         "AI request processed successfully"
       );
