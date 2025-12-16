@@ -5,6 +5,8 @@ import { generateObjectsTable } from "@/utils/generateTable";
 import { env } from "@/config/env";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { SettingService } from "@/services/setting.service";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 export interface AdminHandlerDependencies {
   userService: UserService;
@@ -96,6 +98,20 @@ export class AdminHandler {
     if (!(await this.isAdmin(ctx))) return;
 
     await ctx.reply("OK");
+  }
+
+  async handleVersion(ctx: Context) {
+    if (!(await this.isAdmin(ctx))) return;
+
+    try {
+      const packageJsonPath = join(process.cwd(), "package.json");
+      const packageJson = JSON.parse(
+        readFileSync(packageJsonPath, "utf-8")
+      ) as { version: string };
+      await ctx.reply(`Version: ${packageJson.version}`);
+    } catch (error) {
+      await ctx.reply("Failed to read version");
+    }
   }
 
   async handleSettings(ctx: Context) {

@@ -56,6 +56,7 @@ export const startBot = (deps: BotDependencies) => {
   bot.command("requests", (ctx) => adminHandler.handleAiRequests(ctx));
   bot.command("list", (ctx) => userCommandsHandler.handleList(ctx));
   bot.command("health", (ctx) => adminHandler.handleHealth(ctx));
+  bot.command("version", (ctx) => adminHandler.handleVersion(ctx));
   bot.command("settings", (ctx) => adminHandler.handleSettings(ctx));
 
   bot.on(message("text"), (ctx) => {
