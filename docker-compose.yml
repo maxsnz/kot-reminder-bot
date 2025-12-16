@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: reminder
+    container_name: reminder
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LOGTAIL_TOKEN: ${LOGTAIL_TOKEN}
+      LOGTAIL_SOURCE: ${LOGTAIL_SOURCE}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep 'tsx' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
