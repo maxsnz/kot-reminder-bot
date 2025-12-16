@@ -96,11 +96,29 @@ export class AiResultProcessor {
         const allSchedules = schedules
           .map((schedule) => formatScheduleList(schedule, timezone))
           .join("\n\n");
-        await this.deps.messageService.sendMarkdownV2(chatId, allSchedules);
+        const sentMessage = await this.deps.messageService.sendMarkdownV2(
+          chatId,
+          allSchedules
+        );
+        if (!sentMessage) {
+          logger.warn(
+            { chatId, aiRequestId: aiRequest.id },
+            "Failed to send schedule list message"
+          );
+        }
       }
 
       if (result.response) {
-        await this.deps.messageService.sendMessage(chatId, result.response);
+        const sentMessage = await this.deps.messageService.sendMessage(
+          chatId,
+          result.response
+        );
+        if (!sentMessage) {
+          logger.warn(
+            { chatId, aiRequestId: aiRequest.id },
+            "Failed to send AI response message"
+          );
+        }
       }
 
       if (scheduleForConfirmation && user.timezone) {
@@ -109,7 +127,16 @@ export class AiResultProcessor {
           user.timezone,
           scheduleForConfirmation.action
         );
-        await this.deps.messageService.sendMessage(chatId, confirmationMessage);
+        const sentMessage = await this.deps.messageService.sendMessage(
+          chatId,
+          confirmationMessage
+        );
+        if (!sentMessage) {
+          logger.warn(
+            { chatId, aiRequestId: aiRequest.id },
+            "Failed to send schedule confirmation message"
+          );
+        }
       }
     } catch (error) {
       logger.error(

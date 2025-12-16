@@ -50,33 +50,24 @@ export function createScheduleReminderTask(
 
       const user = schedule.user;
 
-      let telegramMessageId: number | undefined;
-      try {
-        const sentMessage = await messageService.sendMessage(
-          user.chatId,
-          `${schedule.emoji ?? ""} ${schedule.message}`
-        );
-        telegramMessageId = sentMessage.message_id;
+      // MessageService now handles errors internally, returns null on failure
+      const sentMessage = await messageService.sendMessage(
+        user.chatId,
+        `${schedule.emoji ?? ""} ${schedule.message}`
+      );
+
+      const telegramMessageId = sentMessage?.message_id;
+
+      if (sentMessage) {
         logger.info(
           { userId: user.id, scheduleId: schedule.id },
           "Sent message to user for schedule"
         );
-      } catch (telegramError) {
-        const errorMessage =
-          telegramError instanceof Error
-            ? telegramError.message
-            : String(telegramError);
-        logger.error(
-          {
-            err:
-              telegramError instanceof Error
-                ? telegramError
-                : new Error(String(telegramError)),
-            scheduleId,
-          },
-          "Failed to send Telegram message for schedule"
+      } else {
+        logger.warn(
+          { userId: user.id, scheduleId: schedule.id },
+          "Failed to send message to user for schedule, continuing anyway"
         );
-        throw new Error(`Failed to send Telegram message: ${errorMessage}`);
       }
 
       const focus = await focusService.findByScheduleId(schedule.id);
@@ -85,7 +76,7 @@ export function createScheduleReminderTask(
         await chatMessageService.createMessage({
           userId: user.id,
           telegramChatId: user.chatId.toString(),
-          telegramMessageId: telegramMessageId?.toString(),
+          telegramMessageId: telegramMessageId?.toString() ?? null,
           role: MessageRole.system,
           text: schedule.message,
           scheduleId: schedule.id,

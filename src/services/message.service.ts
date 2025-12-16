@@ -1,6 +1,7 @@
 import { Telegraf } from "telegraf";
 import { escapeMarkdownV2 } from "@/utils/escapeMarkdownV2";
 import type { Message } from "telegraf/types";
+import { logger } from "@/utils/logger";
 
 type SendMessageOptions = Parameters<Telegraf["telegram"]["sendMessage"]>[2];
 
@@ -66,33 +67,121 @@ export class MessageService {
    * @param chatId Telegram chat ID
    * @param text Message text
    * @param options Optional Telegram message options
-   * @returns The sent message
+   * @returns The sent message, or null if sending failed
    */
   async sendMessage(
     chatId: number,
     text: string,
     options?: SendMessageOptions
-  ): Promise<Message.TextMessage> {
-    return await this.bot.telegram.sendMessage(chatId, text, options);
+  ): Promise<Message.TextMessage | null> {
+    try {
+      return await this.bot.telegram.sendMessage(chatId, text, options);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorCode =
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        (error as any).response !== null
+          ? (error as any).response?.error_code
+          : undefined;
+
+      logger.error(
+        {
+          err: error instanceof Error ? error : new Error(String(error)),
+          chatId,
+          errorCode,
+          messagePreview: text.substring(0, 100),
+        },
+        "Failed to send message"
+      );
+
+      return null;
+    }
   }
 
   /**
    * Send a MarkdownV2 formatted message to a chat
    * Automatically escapes special characters in the text while preserving code blocks
+   * If MarkdownV2 parsing fails, automatically falls back to plain text
    * @param chatId Telegram chat ID
    * @param text Message text (will be escaped for MarkdownV2, code blocks preserved)
    * @param options Optional Telegram message options (parse_mode will be overridden)
-   * @returns The sent message
+   * @returns The sent message, or null if sending failed
    */
   async sendMarkdownV2(
     chatId: number,
     text: string,
     options?: Omit<SendMessageOptions, "parse_mode">
-  ): Promise<Message.TextMessage> {
-    const escapedText = escapeMarkdownV2PreservingCodeBlocks(text);
-    return await this.bot.telegram.sendMessage(chatId, escapedText, {
-      ...options,
-      parse_mode: "MarkdownV2",
-    });
+  ): Promise<Message.TextMessage | null> {
+    try {
+      const escapedText = escapeMarkdownV2PreservingCodeBlocks(text);
+      return await this.bot.telegram.sendMessage(chatId, escapedText, {
+        ...options,
+        parse_mode: "MarkdownV2",
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorCode =
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        (error as any).response !== null
+          ? (error as any).response?.error_code
+          : undefined;
+
+      // Check if this is a MarkdownV2 parsing error (400 Bad Request with parse error)
+      const isParsingError =
+        errorCode === 400 &&
+        (errorMessage.includes("can't parse entities") ||
+          errorMessage.includes("parse") ||
+          errorMessage.includes("Bad Request"));
+
+      if (isParsingError) {
+        // Fallback to plain text
+        logger.warn(
+          {
+            err: error instanceof Error ? error : new Error(String(error)),
+            chatId,
+            errorCode,
+            messagePreview: text.substring(0, 100),
+          },
+          "MarkdownV2 parsing error, falling back to plain text"
+        );
+
+        try {
+          // Send as plain text (options already doesn't include parse_mode)
+          return await this.bot.telegram.sendMessage(chatId, text, options);
+        } catch (fallbackError) {
+          logger.error(
+            {
+              err:
+                fallbackError instanceof Error
+                  ? fallbackError
+                  : new Error(String(fallbackError)),
+              chatId,
+              messagePreview: text.substring(0, 100),
+            },
+            "Failed to send message even with plain text fallback"
+          );
+          return null;
+        }
+      }
+
+      // For other errors, log and return null
+      logger.error(
+        {
+          err: error instanceof Error ? error : new Error(String(error)),
+          chatId,
+          errorCode,
+          messagePreview: text.substring(0, 100),
+        },
+        "Failed to send MarkdownV2 message"
+      );
+
+      return null;
+    }
   }
 }

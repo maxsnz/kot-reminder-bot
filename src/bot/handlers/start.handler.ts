@@ -45,13 +45,13 @@ export class StartHandler {
       chatId,
       messageText
     );
-    logger.debug({ response: response.text }, "Start command response sent");
+    logger.debug({ response: response?.text }, "Start command response sent");
 
     await this.deps.chatMessageService.createMessage({
       userId: user.id,
       telegramChatId: chatId.toString(),
       role: MessageRole.system,
-      text: response.text || "",
+      text: response?.text || "",
       focusId: focus.id,
     });
   }
