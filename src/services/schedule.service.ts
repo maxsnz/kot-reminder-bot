@@ -172,20 +172,46 @@ export class ScheduleService {
       data: { status: StatusKind.canceled },
     });
 
-    // Get timezone from schedule for sync (though it won't create jobs for canceled schedule)
-    const timezone = await this.getTimezoneFromSchedule(id);
-    if (timezone) {
-      await this.syncJobsForSchedule(id, timezone);
+    // Delete worker jobs for this schedule
+    const jobKeyPattern = `schedule:${id}`;
+    try {
+      await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
+      logger.info(
+        { scheduleId: id },
+        "Deleted worker jobs for canceled schedule"
+      );
+    } catch (error) {
+      logger.error(
+        { err: error, scheduleId: id },
+        "Failed to delete worker jobs for canceled schedule"
+      );
+      // Continue even if job deletion fails
     }
+
     return schedule;
   }
 
   // End a schedule
   async endSchedule(id: string): Promise<Schedule> {
-    return this.prisma.schedule.update({
+    const schedule = await this.prisma.schedule.update({
       where: { id },
       data: { status: StatusKind.ended },
     });
+
+    // Delete worker jobs for this schedule
+    const jobKeyPattern = `schedule:${id}`;
+    try {
+      await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
+      logger.info({ scheduleId: id }, "Deleted worker jobs for ended schedule");
+    } catch (error) {
+      logger.error(
+        { err: error, scheduleId: id },
+        "Failed to delete worker jobs for ended schedule"
+      );
+      // Continue even if job deletion fails
+    }
+
+    return schedule;
   }
 
   // Activate a schedule
@@ -198,6 +224,22 @@ export class ScheduleService {
 
   // Delete schedule
   async deleteSchedule(id: string): Promise<void> {
+    // Delete worker jobs for this schedule
+    const jobKeyPattern = `schedule:${id}`;
+    try {
+      await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
+      logger.info(
+        { scheduleId: id },
+        "Deleted worker jobs for deleted schedule"
+      );
+    } catch (error) {
+      logger.error(
+        { err: error, scheduleId: id },
+        "Failed to delete worker jobs for deleted schedule"
+      );
+      // Continue even if job deletion fails
+    }
+
     await this.prisma.schedule.delete({
       where: { id },
     });
@@ -298,9 +340,22 @@ export class ScheduleService {
       return;
     }
 
-    // If schedule is not active, we're done
-    // (Using jobKey with replace mode will automatically cancel any existing job)
+    // If schedule is not active, delete any existing jobs and return
     if (schedule.status !== StatusKind.active) {
+      const jobKeyPattern = `schedule:${scheduleId}`;
+      try {
+        await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
+        logger.info(
+          { scheduleId, status: schedule.status },
+          "Deleted worker jobs for inactive schedule"
+        );
+      } catch (error) {
+        logger.error(
+          { err: error, scheduleId, status: schedule.status },
+          "Failed to delete worker jobs for inactive schedule"
+        );
+        // Continue even if job deletion fails
+      }
       return;
     }
 
@@ -350,5 +405,43 @@ export class ScheduleService {
       select: { timezone: true },
     });
     return user?.timezone ?? null;
+  }
+
+  // Delete all schedules for a user and their corresponding worker jobs
+  async deleteAllSchedulesByUserId(userId: string): Promise<number> {
+    // Find all schedules for the user
+    const schedules = await this.findByUserId(userId);
+    const scheduleCount = schedules.length;
+
+    if (scheduleCount === 0) {
+      logger.info({ userId }, "No schedules found for user");
+      return 0;
+    }
+
+    // Delete worker jobs for each schedule
+    for (const schedule of schedules) {
+      const jobKeyPattern = `schedule:${schedule.id}`;
+      try {
+        await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
+      } catch (error) {
+        logger.error(
+          { err: error, scheduleId: schedule.id, userId },
+          "Failed to delete worker jobs for schedule"
+        );
+        // Continue with deletion even if job deletion fails
+      }
+    }
+
+    // Delete all schedules from database
+    const deleteResult = await this.prisma.schedule.deleteMany({
+      where: { userId },
+    });
+
+    logger.info(
+      { userId, deletedCount: deleteResult.count },
+      "Deleted all schedules for user"
+    );
+
+    return deleteResult.count;
   }
 }

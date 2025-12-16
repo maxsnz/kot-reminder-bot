@@ -1,4 +1,3 @@
 - custom user instructions
 - CI/CD
 - webhooks mode for TG
-- restart bot on settings update

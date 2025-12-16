@@ -6,6 +6,8 @@ import { generateObjectsTable } from "@/utils/generateTable";
 import { env } from "@/config/env";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { SettingService } from "@/services/setting.service";
+import { ScheduleService } from "@/services/schedule.service";
+import { logger } from "@/utils/logger";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -15,6 +17,7 @@ export interface AdminHandlerDependencies {
   aiRequestService: AiRequestService;
   settingService: SettingService;
   messageService: MessageService;
+  scheduleService: ScheduleService;
 }
 
 export class AdminHandler {
@@ -210,6 +213,41 @@ export class AdminHandler {
       await this.deps.messageService.sendMessage(
         chatId,
         "Invalid action. Use -set or -get"
+      );
+    }
+  }
+
+  async handleRemoveAllMyTasks(ctx: Context) {
+    if (!(await this.isAdmin(ctx))) return;
+
+    const chatId = ctx.message?.chat.id;
+    if (!chatId) return;
+
+    const user = await this.deps.userService.findByChatId(chatId);
+    if (!user) {
+      await this.deps.messageService.sendMessage(chatId, "User not found");
+      return;
+    }
+
+    try {
+      const deletedCount =
+        await this.deps.scheduleService.deleteAllSchedulesByUserId(user.id);
+
+      await this.deps.messageService.sendMessage(
+        chatId,
+        `Deleted ${deletedCount} task${deletedCount !== 1 ? "s" : ""}`
+      );
+    } catch (error) {
+      logger.error(
+        {
+          err: error instanceof Error ? error : new Error(String(error)),
+          userId: user.id,
+        },
+        "Failed to delete all tasks for user"
+      );
+      await this.deps.messageService.sendMessage(
+        chatId,
+        "Failed to delete tasks. Please try again later."
       );
     }
   }

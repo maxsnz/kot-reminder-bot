@@ -1,10 +1,13 @@
 import { run, Runner, TaskList, quickAddJob } from "graphile-worker";
 import { env } from "@/config/env";
 import { logger } from "@/utils/logger";
+import { PrismaClient } from "@/prisma/generated/client";
 
 export class GraphileWorkerService {
   private runner: Runner | null = null;
   private isStarted = false;
+
+  constructor(private prisma: PrismaClient) {}
 
   async start(taskList: TaskList): Promise<void> {
     if (this.isStarted) {
@@ -69,5 +72,28 @@ export class GraphileWorkerService {
 
   isRunning(): boolean {
     return this.isStarted && this.runner !== null;
+  }
+
+  // Delete jobs by jobKey (exact match) or pattern (e.g., "schedule:abc123" or "schedule:%")
+  async deleteJobsByKeyPattern(pattern: string): Promise<number> {
+    try {
+      // Use LIKE for pattern matching (supports % wildcards) or exact match
+      // Note: graphile-worker stores job keys in the 'key' column, not 'job_key'
+      const result = await this.prisma.$executeRaw`
+        DELETE FROM graphile_worker.jobs
+        WHERE key LIKE ${pattern}
+      `;
+      logger.info(
+        { pattern, deletedCount: result },
+        "Deleted jobs by key pattern"
+      );
+      return result;
+    } catch (error) {
+      logger.error(
+        { err: error, pattern },
+        "Failed to delete jobs by key pattern"
+      );
+      throw error;
+    }
   }
 }

@@ -38,6 +38,7 @@ export const startBot = (deps: BotDependencies) => {
     chatMessageService: deps.chatMessageService,
     aiRequestService: deps.aiRequestService,
     settingService: deps.settingService,
+    scheduleService: deps.scheduleService,
     messageService,
   });
 
@@ -66,6 +67,9 @@ export const startBot = (deps: BotDependencies) => {
   bot.command("health", (ctx) => adminHandler.handleHealth(ctx));
   bot.command("version", (ctx) => adminHandler.handleVersion(ctx));
   bot.command("settings", (ctx) => adminHandler.handleSettings(ctx));
+  bot.command("remove-all-my-tasks", (ctx) =>
+    adminHandler.handleRemoveAllMyTasks(ctx)
+  );
 
   bot.on(message("text"), (ctx) => {
     const entities = ctx.message.entities || [];

@@ -26,7 +26,7 @@ async function main() {
   const userService = new UserService(dbClient);
   const chatMessageService = new ChatMessageService(dbClient);
   const focusService = new FocusService(dbClient);
-  const graphileWorkerService = new GraphileWorkerService();
+  const graphileWorkerService = new GraphileWorkerService(dbClient);
   const scheduleService = new ScheduleService(dbClient, graphileWorkerService);
   const settingService = new SettingService(dbClient);
   const aiService = new AIService({
