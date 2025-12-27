@@ -3,6 +3,7 @@ import {
   AiRequest,
   AiRequestStatus,
   Prisma,
+  User,
 } from "@/prisma/generated/client";
 
 export interface CreateAiRequestParams {
@@ -143,7 +144,11 @@ export class AiRequestService {
     });
   }
 
-  async getAiRequests(): Promise<AiRequest[]> {
-    return this.prisma.aiRequest.findMany();
+  async getAiRequests(): Promise<(AiRequest & { user: User })[]> {
+    return this.prisma.aiRequest.findMany({
+      include: {
+        user: true,
+      },
+    });
   }
 }

@@ -184,4 +184,30 @@ export class MessageService {
       return null;
     }
   }
+
+  async sendAsCodeBlock(
+    chatId: number,
+    text: string,
+    options?: Omit<SendMessageOptions, "parse_mode">
+  ): Promise<Message.TextMessage | null> {
+    return await this.bot.telegram.sendMessage(chatId, `\`\`\`${text}\`\`\``, {
+      ...options,
+      parse_mode: "MarkdownV2",
+    });
+  }
+
+  async sendJson(
+    chatId: number,
+    json: any,
+    options?: Omit<SendMessageOptions, "parse_mode">
+  ): Promise<Message.TextMessage | null> {
+    return await this.bot.telegram.sendMessage(
+      chatId,
+      `\`\`\`json\n${JSON.stringify(json, null, 2)}\`\`\``,
+      {
+        ...options,
+        parse_mode: "MarkdownV2",
+      }
+    );
+  }
 }

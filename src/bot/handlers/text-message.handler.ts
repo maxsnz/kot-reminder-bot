@@ -102,6 +102,8 @@ export class TextMessageHandler {
           aiRequestId: aiRequest.id,
           model: "gpt-5-nano",
           prompt: prompt,
+          userName: user.username,
+          messageText,
         },
         "Created AiRequest"
       );

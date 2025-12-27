@@ -1,4 +1,5 @@
 import { Context } from "telegraf";
+import { performance } from "perf_hooks";
 import { UserService } from "@/services/user.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { MessageService } from "@/services/message.service";
@@ -88,20 +89,24 @@ export class AdminHandler {
     if (!user) return;
 
     const requests = await this.deps.aiRequestService.getAiRequests();
-    const requestsData = generateObjectsTable(
-      requests.map((request) => ({
-        // userId: request.userId,
-        status: request.status,
-        elapsedTime: request.elapsedTime,
-        inputTokens: request.inputTokens,
-        outputTokens: request.outputTokens,
-        totalTokens: request.totalTokens,
-        cost: request.cost,
-      }))
-    );
-    await this.deps.messageService.sendMarkdownV2(
+    const requestsData = requests
+      .map(
+        (request) =>
+          `[${request.createdAt
+            .toISOString()
+            .replace("T", " ")
+            .substring(0, 16)}] @${request.user.username} | ${
+            request.status
+          } | ${
+            request.elapsedTime
+              ? Math.round((request.elapsedTime / 1000) * 10) / 10
+              : null
+          }ms | ${request.totalTokens} tokens`
+      )
+      .join("\n\n");
+    await this.deps.messageService.sendAsCodeBlock(
       chatId,
-      "```\n" + requestsData + "\n```"
+      `[requests]\n${requestsData}`
     );
   }
 
@@ -111,7 +116,23 @@ export class AdminHandler {
     const chatId = ctx.message?.chat.id;
     if (!chatId) return;
 
-    await this.deps.messageService.sendMessage(chatId, "OK");
+    const last = (performance as any).eventLoopUtilization();
+
+    setTimeout(() => {
+      try {
+        const current = (performance as any).eventLoopUtilization(last);
+
+        void this.deps.messageService.sendJson(chatId, {
+          ok: true,
+          ts: new Date().toISOString(),
+          utilization: Number(current.utilization.toFixed(3)),
+          activeMs: Number((current.active / 1e6).toFixed(3)),
+          idleMs: Number((current.idle / 1e6).toFixed(3)),
+        });
+      } catch (e) {
+        logger.error({ err: e }, "ELU measure failed");
+      }
+    }, 10_000);
   }
 
   async handleVersion(ctx: Context) {

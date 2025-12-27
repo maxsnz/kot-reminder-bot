@@ -29,6 +29,13 @@ export class UserCommandsHandler {
     const schedules = await this.deps.scheduleService.findActiveByUserId(
       user.id
     );
+    if (schedules.length === 0) {
+      await this.deps.messageService.sendMessage(
+        chatId,
+        `У тебя нет активных задач`
+      );
+      return;
+    }
     const timezone = user.timezone || "UTC";
     const allSchedules = schedules
       .map((schedule) => formatScheduleList(schedule, timezone))

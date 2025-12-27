@@ -5,6 +5,7 @@ import { SCHEDULE_PROMPT, responseSchema } from "@/bot/prompt";
 import { Response } from "@/bot/prompt";
 import { Schedule } from "@/prisma/generated/client";
 import { SettingService } from "./setting.service";
+import { version } from "../../package.json";
 
 export interface AIServiceDependencies {
   openaiApiKey: string;
@@ -71,7 +72,7 @@ export class AIService {
   async processMessage(prompt: string) {
     const response = await this.client.responses.create({
       model: "gpt-5-nano",
-      prompt_cache_key: "schedule_prompt1",
+      prompt_cache_key: `schedule_prompt_${version}`,
       input: [
         {
           role: "system",

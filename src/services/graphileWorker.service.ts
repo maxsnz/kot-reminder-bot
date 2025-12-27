@@ -78,7 +78,6 @@ export class GraphileWorkerService {
   async deleteJobsByKeyPattern(pattern: string): Promise<number> {
     try {
       // Use LIKE for pattern matching (supports % wildcards) or exact match
-      // Note: graphile-worker stores job keys in the 'key' column, not 'job_key'
       const result = await this.prisma.$executeRaw`
         DELETE FROM graphile_worker.jobs
         WHERE key LIKE ${pattern}

@@ -17,10 +17,12 @@ export class TimezoneHandler {
     const user = await this.deps.userService.findByChatId(chatId);
     if (!user) return;
 
-    await this.deps.userService.updateUser(user.id, { timezone: null });
+    // await this.deps.userService.updateUser(user.id, { timezone: null });
     await this.deps.messageService.sendMessage(
       chatId,
-      `Пожалуйста, напиши мне где ты находишься, мне хватит города и страны`
+      `Твоя текущая таймзона зона: ${
+        user.timezone || "неизвестно"
+      }. Пожалуйста, напиши мне где ты находишься, мне хватит города и страны`
     );
   }
 }

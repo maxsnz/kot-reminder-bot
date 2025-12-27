@@ -110,6 +110,7 @@ export function createAiResultTask(
           },
           "Parsing error detected, not retrying"
         );
+        // TODO: retry query with error details
         return; // Don't throw, so Graphile Worker won't retry
       }
 
