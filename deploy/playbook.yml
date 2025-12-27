@@ -1,0 +1,53 @@
+- hosts: server
+  become: true
+
+  vars_files:
+    - ../../infra/group_vars/all/vault.yml
+    - group_vars/all/vault.yml
+    - group_vars/all.yml
+
+  vars:
+    app_name: "kotodom-reminder"
+
+    # ---------- Postgres ----------
+    pg_db_name: "kotodom_reminder"
+    pg_db_user: "kotodom_reminder"
+
+    # Deterministic password based on master secret + app_name
+    pg_db_password: >-
+      {{ (kotodom_master_secret ~ ':' ~ app_name ~ ':pg')
+         | hash('sha256')
+         | truncate(32, True, '') }}
+
+    # ---------- Paths ----------
+    project_dir: "/var/www/kotodom-reminder"
+    compose_path: "{{ project_dir }}/docker-compose.yml"
+
+    # ---------- Docker App ----------
+    docker_app_project_dir: "{{ project_dir }}"
+    docker_app_compose_path: "{{ compose_path }}"
+    docker_app_git_repo: "git@github.com:maxsnz/kot-reminder-bot.git"
+    docker_app_git_version: "master"
+    docker_app_env_vars: "{{ env_vars }}"
+
+    # ---------- Env vars for .env ----------
+    env_vars:
+      NODE_ENV: "production"
+      TELEGRAM_TOKEN: "{{ TELEGRAM_TOKEN }}"
+      OPENAI_API_KEY: "{{ OPENAI_API_KEY }}"
+      ADMIN_USERNAME: "{{ ADMIN_USERNAME }}"
+      LOGTAIL_TOKEN: "{{ LOGTAIL_TOKEN }}"
+      LOGTAIL_SOURCE: "{{ LOGTAIL_SOURCE }}"
+
+      DATABASE_URL: >-
+        postgresql://{{ pg_db_user }}:{{ pg_db_password }}@127.0.0.1:5432/{{ pg_db_name }}
+
+    # ---------- Vector Logging ----------
+    vector_source_name: "kotodom_reminder"
+    vector_log_path: "/var/lib/docker/containers/*/*-json.log"
+
+  roles:
+    - { role: postgres_db, tags: ["db"] }
+    - { role: docker_app_setup, tags: ["setup"] }
+    - { role: docker_app, tags: ["app"] }
+    - { role: vector_source, tags: ["logs"] }

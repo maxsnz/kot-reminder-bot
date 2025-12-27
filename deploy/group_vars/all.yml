@@ -1,0 +1,2 @@
+# reminder_log_path: "/var/log/kotodom-reminder/*.log"
+NODE_ENV: "production"
