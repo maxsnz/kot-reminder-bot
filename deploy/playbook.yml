@@ -20,15 +20,15 @@
          | truncate(32, True, '') }}
 
     # ---------- Paths ----------
-    project_dir: "/var/www/kotodom-reminder"
+    project_dir: "/var/www/reminder"
     compose_path: "{{ project_dir }}/docker-compose.yml"
+    env_file_path: "{{ project_dir }}/.env"
 
     # ---------- Docker App ----------
     docker_app_project_dir: "{{ project_dir }}"
     docker_app_compose_path: "{{ compose_path }}"
     docker_app_git_repo: "git@github.com:maxsnz/kot-reminder-bot.git"
     docker_app_git_version: "master"
-    docker_app_env_vars: "{{ env_vars }}"
 
     # ---------- Env vars for .env ----------
     env_vars:
