@@ -1,4 +1,4 @@
-APP_NAME          := kotodom-reminder
+APP_NAME          := reminder
 ANSIBLE_PLAYBOOK  := deploy/playbook.yml
 ANSIBLE_INVENTORY := ../infra/inventory.ini
 INFRA_DIR         := ../infra
