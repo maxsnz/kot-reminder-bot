@@ -28,6 +28,7 @@
     docker_app_compose_path: "{{ compose_path }}"
     docker_app_git_repo: "git@github.com:maxsnz/kot-reminder-bot.git"
     docker_app_git_version: "master"
+    docker_app_env_vars: "{{ env_vars }}"
 
     # ---------- Env vars for .env ----------
     env_vars:
