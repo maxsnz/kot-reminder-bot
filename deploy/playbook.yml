@@ -22,7 +22,6 @@
     # ---------- Paths ----------
     project_dir: "/var/www/reminder"
     compose_path: "{{ project_dir }}/docker-compose.yml"
-    env_file_path: "{{ project_dir }}/.env"
 
     # ---------- Docker App ----------
     docker_app_project_dir: "{{ project_dir }}"
