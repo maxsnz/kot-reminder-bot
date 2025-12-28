@@ -49,6 +49,7 @@
     vector_log_path: "/var/lib/docker/containers/*/*-json.log"
 
   roles:
+    - { role: env_file, tags: ["env"] }
     - { role: postgres_db, tags: ["db"] }
     - { role: docker_app_setup, tags: ["setup"] }
     - { role: docker_app, tags: ["app"] }
