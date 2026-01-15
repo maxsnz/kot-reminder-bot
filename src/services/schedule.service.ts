@@ -127,6 +127,23 @@ export class ScheduleService {
     });
   }
 
+  // Count active schedules for a user
+  async countActiveByUserId(userId: string): Promise<number> {
+    return this.prisma.schedule.count({
+      where: {
+        userId,
+        status: StatusKind.active,
+      },
+    });
+  }
+
+  // Count all schedules for a user
+  async countByUserId(userId: string): Promise<number> {
+    return this.prisma.schedule.count({
+      where: { userId },
+    });
+  }
+
   // Get schedules by status
   async findByStatus(status: StatusKind): Promise<Schedule[]> {
     return this.prisma.schedule.findMany({
@@ -293,19 +310,32 @@ export class ScheduleService {
     scheduleData: NonNullable<z.infer<typeof ResultUpdateSchedule>["patch"]>,
     timezone?: string
   ): Promise<Schedule> {
+    // Check current schedule status - if it's ended or canceled, we should reactivate it
+    const currentSchedule = await this.findById(scheduleId);
+    const shouldActivate =
+      currentSchedule &&
+      (currentSchedule.status === StatusKind.ended ||
+        currentSchedule.status === StatusKind.canceled);
+
     const updateData: Parameters<typeof this.updateSchedule>[1] = {
       summary: scheduleData.summary,
       timeSummary: scheduleData.timeSummary,
       actionSummary: scheduleData.actionSummary,
     };
 
+    // Reactivate schedule if it was ended or canceled
+    if (shouldActivate) {
+      updateData.status = StatusKind.active;
+    }
+
     if (scheduleData.message) updateData.message = scheduleData.message;
     if (scheduleData.frequency !== undefined && scheduleData.frequency !== null)
       updateData.frequency = scheduleData.frequency;
 
+    if (scheduleData.runAtDates)
+      updateData.runAtDates = scheduleData.runAtDates;
     if (scheduleData.runAtTimes)
       updateData.runAtTimes = scheduleData.runAtTimes;
-    if (scheduleData.frequency) updateData.frequency = scheduleData.frequency;
     if (
       scheduleData.intervalStep !== undefined &&
       scheduleData.intervalStep !== null

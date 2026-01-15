@@ -6,6 +6,7 @@ import { TimezoneHandler } from "./handlers/timezone.handler";
 import { AdminHandler } from "./handlers/admin.handler";
 import { TextMessageHandler } from "./handlers/text-message.handler";
 import { UserCommandsHandler } from "./handlers/list.handler";
+import { SnoozeCallbackHandler } from "./handlers/snooze-callback.handler";
 import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
 import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
@@ -45,6 +46,7 @@ export const startBot = (deps: BotDependencies) => {
   const userCommandsHandler = new UserCommandsHandler({
     userService: deps.userService,
     scheduleService: deps.scheduleService,
+    scheduleSnoozeService: deps.scheduleSnoozeService,
     messageService,
   });
 
@@ -56,6 +58,15 @@ export const startBot = (deps: BotDependencies) => {
     aiRequestService: deps.aiRequestService,
     graphileWorkerService: deps.graphileWorkerService,
     messageService,
+  });
+
+  const snoozeCallbackHandler = new SnoozeCallbackHandler({
+    scheduleSnoozeService: deps.scheduleSnoozeService,
+    scheduleService: deps.scheduleService,
+    userService: deps.userService,
+    messageService,
+    chatMessageService: deps.chatMessageService,
+    focusService: deps.focusService,
   });
 
   bot.command("start", (ctx) => startHandler.handle(ctx));
@@ -82,6 +93,22 @@ export const startBot = (deps: BotDependencies) => {
     }
 
     textMessageHandler.handle(ctx);
+  });
+
+  // Handle callback queries for snooze buttons and dismiss
+  bot.on("callback_query", (ctx) => {
+    if (!ctx.callbackQuery || !("data" in ctx.callbackQuery)) {
+      return;
+    }
+
+    const callbackData = ctx.callbackQuery.data;
+    // Handle snooze and dismiss callbacks
+    if (
+      typeof callbackData === "string" &&
+      (callbackData.startsWith("snooze:") || callbackData.startsWith("dismiss:"))
+    ) {
+      snoozeCallbackHandler.handle(ctx);
+    }
   });
 
   bot.launch().catch((e) => {

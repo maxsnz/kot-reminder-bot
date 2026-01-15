@@ -2,6 +2,7 @@ import { UserService } from "@/services/user.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { FocusService } from "@/services/focus.service";
 import { ScheduleService } from "@/services/schedule.service";
+import { ScheduleSnoozeService } from "@/services/scheduleSnooze.service";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
 import { SettingService } from "@/services/setting.service";
@@ -12,6 +13,7 @@ export interface BotDependencies {
   chatMessageService: ChatMessageService;
   focusService: FocusService;
   scheduleService: ScheduleService;
+  scheduleSnoozeService: ScheduleSnoozeService;
   aiRequestService: AiRequestService;
   graphileWorkerService: GraphileWorkerService;
   settingService: SettingService;

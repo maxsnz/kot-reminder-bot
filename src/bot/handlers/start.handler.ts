@@ -40,12 +40,22 @@ export class StartHandler {
       focusId: focus.id,
     });
 
-    const messageText = `Привет, ${fullName}! \nЯ могу помочь тебе устанавливать напоминания о важных событиях. Чтобы начать, пожалуйста, напиши мне где ты находишься, мне хватит города и страны`;
-    const response = await this.deps.messageService.sendMessage(
+    const messageText = `
+Привет, ${fullName}! \nЯ могу помочь тебе устанавливать напоминания о важных событиях. 
+Чтобы начать, пожалуйста, напиши мне где ты находишься, мне хватит города и страны`;
+    const response = await this.deps.messageService.sendMarkdownV2(
       chatId,
       messageText
     );
     logger.debug({ response: response?.text }, "Start command response sent");
+
+    await this.deps.chatMessageService.createMessage({
+      userId: user.id,
+      telegramChatId: chatId.toString(),
+      role: MessageRole.system,
+      text: messageText,
+      focusId: focus.id,
+    });
 
     await this.deps.chatMessageService.createMessage({
       userId: user.id,

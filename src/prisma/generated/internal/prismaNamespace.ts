@@ -386,6 +386,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Schedule: 'Schedule',
+  ScheduleSnooze: 'ScheduleSnooze',
   ChatMessage: 'ChatMessage',
   Focus: 'Focus',
   AiRequest: 'AiRequest',
@@ -405,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "schedule" | "chatMessage" | "focus" | "aiRequest" | "setting"
+    modelProps: "user" | "schedule" | "scheduleSnooze" | "chatMessage" | "focus" | "aiRequest" | "setting"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -554,6 +555,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ScheduleCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ScheduleCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScheduleSnooze: {
+      payload: Prisma.$ScheduleSnoozePayload<ExtArgs>
+      fields: Prisma.ScheduleSnoozeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScheduleSnoozeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScheduleSnoozeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>
+        }
+        findFirst: {
+          args: Prisma.ScheduleSnoozeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScheduleSnoozeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>
+        }
+        findMany: {
+          args: Prisma.ScheduleSnoozeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>[]
+        }
+        create: {
+          args: Prisma.ScheduleSnoozeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>
+        }
+        createMany: {
+          args: Prisma.ScheduleSnoozeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScheduleSnoozeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>[]
+        }
+        delete: {
+          args: Prisma.ScheduleSnoozeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>
+        }
+        update: {
+          args: Prisma.ScheduleSnoozeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>
+        }
+        deleteMany: {
+          args: Prisma.ScheduleSnoozeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScheduleSnoozeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScheduleSnoozeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>[]
+        }
+        upsert: {
+          args: Prisma.ScheduleSnoozeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScheduleSnoozePayload>
+        }
+        aggregate: {
+          args: Prisma.ScheduleSnoozeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScheduleSnooze>
+        }
+        groupBy: {
+          args: Prisma.ScheduleSnoozeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduleSnoozeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScheduleSnoozeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScheduleSnoozeCountAggregateOutputType> | number
         }
       }
     }
@@ -933,6 +1008,18 @@ export const ScheduleScalarFieldEnum = {
 export type ScheduleScalarFieldEnum = (typeof ScheduleScalarFieldEnum)[keyof typeof ScheduleScalarFieldEnum]
 
 
+export const ScheduleSnoozeScalarFieldEnum = {
+  id: 'id',
+  scheduleId: 'scheduleId',
+  userId: 'userId',
+  message: 'message',
+  runAt: 'runAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ScheduleSnoozeScalarFieldEnum = (typeof ScheduleSnoozeScalarFieldEnum)[keyof typeof ScheduleSnoozeScalarFieldEnum]
+
+
 export const ChatMessageScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -1286,6 +1373,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   schedule?: Prisma.ScheduleOmit
+  scheduleSnooze?: Prisma.ScheduleSnoozeOmit
   chatMessage?: Prisma.ChatMessageOmit
   focus?: Prisma.FocusOmit
   aiRequest?: Prisma.AiRequestOmit

@@ -7,6 +7,7 @@ import { GraphileWorkerService } from "@/services/graphileWorker.service";
 import { MessageService } from "@/services/message.service";
 import { getNextRunAt } from "@/utils/getNextRunAt";
 import { MessageRole, StatusKind } from "@/prisma/generated/client";
+import { createSnoozeKeyboard } from "@/utils/createSnoozeKeyboard";
 import { logger } from "@/utils/logger";
 
 interface ScheduleReminderJobData {
@@ -50,10 +51,14 @@ export function createScheduleReminderTask(
 
       const user = schedule.user;
 
-      // MessageService now handles errors internally, returns null on failure
-      const sentMessage = await messageService.sendMessage(
+      // Create inline keyboard with snooze buttons
+      const inlineKeyboard = createSnoozeKeyboard(schedule.id);
+
+      // Send message with inline keyboard buttons
+      const sentMessage = await messageService.sendMessageWithInlineKeyboard(
         user.chatId,
-        `${schedule.emoji ?? ""} ${schedule.message}`
+        `${schedule.emoji ?? ""} ${schedule.message}`,
+        inlineKeyboard
       );
 
       const telegramMessageId = sentMessage?.message_id;

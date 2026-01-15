@@ -19,6 +19,7 @@ model User {
   focusId String?
   focus Focus? @relation(fields: [focusId], references: [id])
   aiRequests AiRequest[]
+  scheduleSnoozes ScheduleSnooze[]
 
   // TODO: admin dashboard
   // passwordHash  String
@@ -95,6 +96,22 @@ model Schedule {
 
   chatMessages ChatMessage[]
   focus Focus[]
+  scheduleSnoozes ScheduleSnooze[]
+}
+
+model ScheduleSnooze {
+  id         String           @id @default(uuid())
+  schedule   Schedule         @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  message    String
+  runAt      DateTime
+  createdAt  DateTime         @default(now())
+
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([runAt])
 }
 
 enum MessageRole {

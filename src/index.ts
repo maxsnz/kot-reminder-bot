@@ -5,6 +5,7 @@ import { env } from "./config/env";
 import { ChatMessageService } from "./services/chatMessage.service";
 import { FocusService } from "./services/focus.service";
 import { ScheduleService } from "./services/schedule.service";
+import { ScheduleSnoozeService } from "./services/scheduleSnooze.service";
 import { AIService } from "./services/ai.service";
 import { AiRequestService } from "./services/aiRequest.service";
 import { GraphileWorkerService } from "./services/graphileWorker.service";
@@ -13,6 +14,7 @@ import { MessageService } from "./services/message.service";
 import { createAiRequestTask } from "./workers/ai-request.worker";
 import { createAiResultTask } from "./workers/ai-result.worker";
 import { createScheduleReminderTask } from "./workers/schedule-reminder.worker";
+import { createScheduleSnoozeTask } from "./workers/schedule-snooze.worker";
 import { AiResultProcessor } from "./bot/processors/ai-result.processor";
 import { ScheduleActionProcessor } from "./bot/processors/schedule-action.processor";
 import { logger } from "./utils/logger";
@@ -28,6 +30,10 @@ async function main() {
   const focusService = new FocusService(dbClient);
   const graphileWorkerService = new GraphileWorkerService(dbClient);
   const scheduleService = new ScheduleService(dbClient, graphileWorkerService);
+  const scheduleSnoozeService = new ScheduleSnoozeService(
+    dbClient,
+    graphileWorkerService
+  );
   const settingService = new SettingService(dbClient);
   const aiService = new AIService({
     openaiApiKey: env.OPENAI_API_KEY,
@@ -42,6 +48,7 @@ async function main() {
     chatMessageService,
     focusService,
     scheduleService,
+    scheduleSnoozeService,
     aiRequestService,
     graphileWorkerService,
     settingService,
@@ -85,6 +92,10 @@ async function main() {
       focusService,
       userService,
       graphileWorkerService,
+      messageService
+    ),
+    "schedule-snooze": createScheduleSnoozeTask(
+      scheduleSnoozeService,
       messageService
     ),
   };

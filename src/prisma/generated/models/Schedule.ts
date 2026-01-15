@@ -343,6 +343,7 @@ export type ScheduleWhereInput = {
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   chatMessages?: Prisma.ChatMessageListRelationFilter
   focus?: Prisma.FocusListRelationFilter
+  scheduleSnoozes?: Prisma.ScheduleSnoozeListRelationFilter
 }
 
 export type ScheduleOrderByWithRelationInput = {
@@ -371,6 +372,7 @@ export type ScheduleOrderByWithRelationInput = {
   user?: Prisma.UserOrderByWithRelationInput
   chatMessages?: Prisma.ChatMessageOrderByRelationAggregateInput
   focus?: Prisma.FocusOrderByRelationAggregateInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeOrderByRelationAggregateInput
 }
 
 export type ScheduleWhereUniqueInput = Prisma.AtLeast<{
@@ -402,6 +404,7 @@ export type ScheduleWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   chatMessages?: Prisma.ChatMessageListRelationFilter
   focus?: Prisma.FocusListRelationFilter
+  scheduleSnoozes?: Prisma.ScheduleSnoozeListRelationFilter
 }, "id">
 
 export type ScheduleOrderByWithAggregationInput = {
@@ -487,6 +490,7 @@ export type ScheduleCreateInput = {
   user: Prisma.UserCreateNestedOneWithoutSchedulesInput
   chatMessages?: Prisma.ChatMessageCreateNestedManyWithoutScheduleInput
   focus?: Prisma.FocusCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleUncheckedCreateInput = {
@@ -514,6 +518,7 @@ export type ScheduleUncheckedCreateInput = {
   updatedAt?: Date | string
   chatMessages?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutScheduleInput
   focus?: Prisma.FocusUncheckedCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleUpdateInput = {
@@ -541,6 +546,7 @@ export type ScheduleUpdateInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutSchedulesNestedInput
   chatMessages?: Prisma.ChatMessageUpdateManyWithoutScheduleNestedInput
   focus?: Prisma.FocusUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleUncheckedUpdateInput = {
@@ -568,6 +574,7 @@ export type ScheduleUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chatMessages?: Prisma.ChatMessageUncheckedUpdateManyWithoutScheduleNestedInput
   focus?: Prisma.FocusUncheckedUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleCreateManyInput = {
@@ -747,6 +754,11 @@ export type ScheduleSumOrderByAggregateInput = {
   monthsOfYear?: Prisma.SortOrder
 }
 
+export type ScheduleScalarRelationFilter = {
+  is?: Prisma.ScheduleWhereInput
+  isNot?: Prisma.ScheduleWhereInput
+}
+
 export type ScheduleNullableScalarRelationFilter = {
   is?: Prisma.ScheduleWhereInput | null
   isNot?: Prisma.ScheduleWhereInput | null
@@ -860,6 +872,20 @@ export type ScheduleUpdatemonthsOfYearInput = {
   push?: number | number[]
 }
 
+export type ScheduleCreateNestedOneWithoutScheduleSnoozesInput = {
+  create?: Prisma.XOR<Prisma.ScheduleCreateWithoutScheduleSnoozesInput, Prisma.ScheduleUncheckedCreateWithoutScheduleSnoozesInput>
+  connectOrCreate?: Prisma.ScheduleCreateOrConnectWithoutScheduleSnoozesInput
+  connect?: Prisma.ScheduleWhereUniqueInput
+}
+
+export type ScheduleUpdateOneRequiredWithoutScheduleSnoozesNestedInput = {
+  create?: Prisma.XOR<Prisma.ScheduleCreateWithoutScheduleSnoozesInput, Prisma.ScheduleUncheckedCreateWithoutScheduleSnoozesInput>
+  connectOrCreate?: Prisma.ScheduleCreateOrConnectWithoutScheduleSnoozesInput
+  upsert?: Prisma.ScheduleUpsertWithoutScheduleSnoozesInput
+  connect?: Prisma.ScheduleWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ScheduleUpdateToOneWithWhereWithoutScheduleSnoozesInput, Prisma.ScheduleUpdateWithoutScheduleSnoozesInput>, Prisma.ScheduleUncheckedUpdateWithoutScheduleSnoozesInput>
+}
+
 export type ScheduleCreateNestedOneWithoutChatMessagesInput = {
   create?: Prisma.XOR<Prisma.ScheduleCreateWithoutChatMessagesInput, Prisma.ScheduleUncheckedCreateWithoutChatMessagesInput>
   connectOrCreate?: Prisma.ScheduleCreateOrConnectWithoutChatMessagesInput
@@ -916,6 +942,7 @@ export type ScheduleCreateWithoutUserInput = {
   updatedAt?: Date | string
   chatMessages?: Prisma.ChatMessageCreateNestedManyWithoutScheduleInput
   focus?: Prisma.FocusCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleUncheckedCreateWithoutUserInput = {
@@ -942,6 +969,7 @@ export type ScheduleUncheckedCreateWithoutUserInput = {
   updatedAt?: Date | string
   chatMessages?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutScheduleInput
   focus?: Prisma.FocusUncheckedCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleCreateOrConnectWithoutUserInput = {
@@ -998,6 +1026,130 @@ export type ScheduleScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Schedule"> | Date | string
 }
 
+export type ScheduleCreateWithoutScheduleSnoozesInput = {
+  id?: string
+  message: string
+  kind: $Enums.ScheduleKind
+  sourceText: string
+  summary?: string
+  timeSummary?: string
+  actionSummary?: string
+  emoji?: string | null
+  status?: $Enums.StatusKind
+  runAtDates?: Prisma.ScheduleCreaterunAtDatesInput | string[]
+  runAtTimes?: Prisma.ScheduleCreaterunAtTimesInput | string[]
+  frequency?: $Enums.ScheduleFrequency | null
+  intervalStep?: number
+  startAtDate?: string | null
+  endAtDate?: string | null
+  timesOfDay?: Prisma.ScheduleCreatetimesOfDayInput | string[]
+  daysOfWeek?: Prisma.ScheduleCreatedaysOfWeekInput | number[]
+  daysOfMonth?: Prisma.ScheduleCreatedaysOfMonthInput | number[]
+  monthsOfYear?: Prisma.ScheduleCreatemonthsOfYearInput | number[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutSchedulesInput
+  chatMessages?: Prisma.ChatMessageCreateNestedManyWithoutScheduleInput
+  focus?: Prisma.FocusCreateNestedManyWithoutScheduleInput
+}
+
+export type ScheduleUncheckedCreateWithoutScheduleSnoozesInput = {
+  id?: string
+  userId: string
+  message: string
+  kind: $Enums.ScheduleKind
+  sourceText: string
+  summary?: string
+  timeSummary?: string
+  actionSummary?: string
+  emoji?: string | null
+  status?: $Enums.StatusKind
+  runAtDates?: Prisma.ScheduleCreaterunAtDatesInput | string[]
+  runAtTimes?: Prisma.ScheduleCreaterunAtTimesInput | string[]
+  frequency?: $Enums.ScheduleFrequency | null
+  intervalStep?: number
+  startAtDate?: string | null
+  endAtDate?: string | null
+  timesOfDay?: Prisma.ScheduleCreatetimesOfDayInput | string[]
+  daysOfWeek?: Prisma.ScheduleCreatedaysOfWeekInput | number[]
+  daysOfMonth?: Prisma.ScheduleCreatedaysOfMonthInput | number[]
+  monthsOfYear?: Prisma.ScheduleCreatemonthsOfYearInput | number[]
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  chatMessages?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutScheduleInput
+  focus?: Prisma.FocusUncheckedCreateNestedManyWithoutScheduleInput
+}
+
+export type ScheduleCreateOrConnectWithoutScheduleSnoozesInput = {
+  where: Prisma.ScheduleWhereUniqueInput
+  create: Prisma.XOR<Prisma.ScheduleCreateWithoutScheduleSnoozesInput, Prisma.ScheduleUncheckedCreateWithoutScheduleSnoozesInput>
+}
+
+export type ScheduleUpsertWithoutScheduleSnoozesInput = {
+  update: Prisma.XOR<Prisma.ScheduleUpdateWithoutScheduleSnoozesInput, Prisma.ScheduleUncheckedUpdateWithoutScheduleSnoozesInput>
+  create: Prisma.XOR<Prisma.ScheduleCreateWithoutScheduleSnoozesInput, Prisma.ScheduleUncheckedCreateWithoutScheduleSnoozesInput>
+  where?: Prisma.ScheduleWhereInput
+}
+
+export type ScheduleUpdateToOneWithWhereWithoutScheduleSnoozesInput = {
+  where?: Prisma.ScheduleWhereInput
+  data: Prisma.XOR<Prisma.ScheduleUpdateWithoutScheduleSnoozesInput, Prisma.ScheduleUncheckedUpdateWithoutScheduleSnoozesInput>
+}
+
+export type ScheduleUpdateWithoutScheduleSnoozesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  message?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.EnumScheduleKindFieldUpdateOperationsInput | $Enums.ScheduleKind
+  sourceText?: Prisma.StringFieldUpdateOperationsInput | string
+  summary?: Prisma.StringFieldUpdateOperationsInput | string
+  timeSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  actionSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  emoji?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStatusKindFieldUpdateOperationsInput | $Enums.StatusKind
+  runAtDates?: Prisma.ScheduleUpdaterunAtDatesInput | string[]
+  runAtTimes?: Prisma.ScheduleUpdaterunAtTimesInput | string[]
+  frequency?: Prisma.NullableEnumScheduleFrequencyFieldUpdateOperationsInput | $Enums.ScheduleFrequency | null
+  intervalStep?: Prisma.IntFieldUpdateOperationsInput | number
+  startAtDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endAtDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timesOfDay?: Prisma.ScheduleUpdatetimesOfDayInput | string[]
+  daysOfWeek?: Prisma.ScheduleUpdatedaysOfWeekInput | number[]
+  daysOfMonth?: Prisma.ScheduleUpdatedaysOfMonthInput | number[]
+  monthsOfYear?: Prisma.ScheduleUpdatemonthsOfYearInput | number[]
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutSchedulesNestedInput
+  chatMessages?: Prisma.ChatMessageUpdateManyWithoutScheduleNestedInput
+  focus?: Prisma.FocusUpdateManyWithoutScheduleNestedInput
+}
+
+export type ScheduleUncheckedUpdateWithoutScheduleSnoozesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  message?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.EnumScheduleKindFieldUpdateOperationsInput | $Enums.ScheduleKind
+  sourceText?: Prisma.StringFieldUpdateOperationsInput | string
+  summary?: Prisma.StringFieldUpdateOperationsInput | string
+  timeSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  actionSummary?: Prisma.StringFieldUpdateOperationsInput | string
+  emoji?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStatusKindFieldUpdateOperationsInput | $Enums.StatusKind
+  runAtDates?: Prisma.ScheduleUpdaterunAtDatesInput | string[]
+  runAtTimes?: Prisma.ScheduleUpdaterunAtTimesInput | string[]
+  frequency?: Prisma.NullableEnumScheduleFrequencyFieldUpdateOperationsInput | $Enums.ScheduleFrequency | null
+  intervalStep?: Prisma.IntFieldUpdateOperationsInput | number
+  startAtDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endAtDate?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timesOfDay?: Prisma.ScheduleUpdatetimesOfDayInput | string[]
+  daysOfWeek?: Prisma.ScheduleUpdatedaysOfWeekInput | number[]
+  daysOfMonth?: Prisma.ScheduleUpdatedaysOfMonthInput | number[]
+  monthsOfYear?: Prisma.ScheduleUpdatemonthsOfYearInput | number[]
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  chatMessages?: Prisma.ChatMessageUncheckedUpdateManyWithoutScheduleNestedInput
+  focus?: Prisma.FocusUncheckedUpdateManyWithoutScheduleNestedInput
+}
+
 export type ScheduleCreateWithoutChatMessagesInput = {
   id?: string
   message: string
@@ -1022,6 +1174,7 @@ export type ScheduleCreateWithoutChatMessagesInput = {
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSchedulesInput
   focus?: Prisma.FocusCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleUncheckedCreateWithoutChatMessagesInput = {
@@ -1048,6 +1201,7 @@ export type ScheduleUncheckedCreateWithoutChatMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   focus?: Prisma.FocusUncheckedCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleCreateOrConnectWithoutChatMessagesInput = {
@@ -1090,6 +1244,7 @@ export type ScheduleUpdateWithoutChatMessagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSchedulesNestedInput
   focus?: Prisma.FocusUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleUncheckedUpdateWithoutChatMessagesInput = {
@@ -1116,6 +1271,7 @@ export type ScheduleUncheckedUpdateWithoutChatMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   focus?: Prisma.FocusUncheckedUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleCreateWithoutFocusInput = {
@@ -1142,6 +1298,7 @@ export type ScheduleCreateWithoutFocusInput = {
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSchedulesInput
   chatMessages?: Prisma.ChatMessageCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleUncheckedCreateWithoutFocusInput = {
@@ -1168,6 +1325,7 @@ export type ScheduleUncheckedCreateWithoutFocusInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   chatMessages?: Prisma.ChatMessageUncheckedCreateNestedManyWithoutScheduleInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedCreateNestedManyWithoutScheduleInput
 }
 
 export type ScheduleCreateOrConnectWithoutFocusInput = {
@@ -1210,6 +1368,7 @@ export type ScheduleUpdateWithoutFocusInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSchedulesNestedInput
   chatMessages?: Prisma.ChatMessageUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleUncheckedUpdateWithoutFocusInput = {
@@ -1236,6 +1395,7 @@ export type ScheduleUncheckedUpdateWithoutFocusInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chatMessages?: Prisma.ChatMessageUncheckedUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleCreateManyUserInput = {
@@ -1286,6 +1446,7 @@ export type ScheduleUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chatMessages?: Prisma.ChatMessageUpdateManyWithoutScheduleNestedInput
   focus?: Prisma.FocusUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleUncheckedUpdateWithoutUserInput = {
@@ -1312,6 +1473,7 @@ export type ScheduleUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chatMessages?: Prisma.ChatMessageUncheckedUpdateManyWithoutScheduleNestedInput
   focus?: Prisma.FocusUncheckedUpdateManyWithoutScheduleNestedInput
+  scheduleSnoozes?: Prisma.ScheduleSnoozeUncheckedUpdateManyWithoutScheduleNestedInput
 }
 
 export type ScheduleUncheckedUpdateManyWithoutUserInput = {
@@ -1346,11 +1508,13 @@ export type ScheduleUncheckedUpdateManyWithoutUserInput = {
 export type ScheduleCountOutputType = {
   chatMessages: number
   focus: number
+  scheduleSnoozes: number
 }
 
 export type ScheduleCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   chatMessages?: boolean | ScheduleCountOutputTypeCountChatMessagesArgs
   focus?: boolean | ScheduleCountOutputTypeCountFocusArgs
+  scheduleSnoozes?: boolean | ScheduleCountOutputTypeCountScheduleSnoozesArgs
 }
 
 /**
@@ -1375,6 +1539,13 @@ export type ScheduleCountOutputTypeCountChatMessagesArgs<ExtArgs extends runtime
  */
 export type ScheduleCountOutputTypeCountFocusArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FocusWhereInput
+}
+
+/**
+ * ScheduleCountOutputType without action
+ */
+export type ScheduleCountOutputTypeCountScheduleSnoozesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScheduleSnoozeWhereInput
 }
 
 
@@ -1404,6 +1575,7 @@ export type ScheduleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   chatMessages?: boolean | Prisma.Schedule$chatMessagesArgs<ExtArgs>
   focus?: boolean | Prisma.Schedule$focusArgs<ExtArgs>
+  scheduleSnoozes?: boolean | Prisma.Schedule$scheduleSnoozesArgs<ExtArgs>
   _count?: boolean | Prisma.ScheduleCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["schedule"]>
 
@@ -1489,6 +1661,7 @@ export type ScheduleInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   chatMessages?: boolean | Prisma.Schedule$chatMessagesArgs<ExtArgs>
   focus?: boolean | Prisma.Schedule$focusArgs<ExtArgs>
+  scheduleSnoozes?: boolean | Prisma.Schedule$scheduleSnoozesArgs<ExtArgs>
   _count?: boolean | Prisma.ScheduleCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ScheduleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1504,6 +1677,7 @@ export type $SchedulePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     user: Prisma.$UserPayload<ExtArgs>
     chatMessages: Prisma.$ChatMessagePayload<ExtArgs>[]
     focus: Prisma.$FocusPayload<ExtArgs>[]
+    scheduleSnoozes: Prisma.$ScheduleSnoozePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1925,6 +2099,7 @@ export interface Prisma__ScheduleClient<T, Null = never, ExtArgs extends runtime
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   chatMessages<T extends Prisma.Schedule$chatMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Schedule$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   focus<T extends Prisma.Schedule$focusArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Schedule$focusArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FocusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  scheduleSnoozes<T extends Prisma.Schedule$scheduleSnoozesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Schedule$scheduleSnoozesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScheduleSnoozePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2417,6 +2592,30 @@ export type Schedule$focusArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.FocusScalarFieldEnum | Prisma.FocusScalarFieldEnum[]
+}
+
+/**
+ * Schedule.scheduleSnoozes
+ */
+export type Schedule$scheduleSnoozesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScheduleSnooze
+   */
+  select?: Prisma.ScheduleSnoozeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScheduleSnooze
+   */
+  omit?: Prisma.ScheduleSnoozeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScheduleSnoozeInclude<ExtArgs> | null
+  where?: Prisma.ScheduleSnoozeWhereInput
+  orderBy?: Prisma.ScheduleSnoozeOrderByWithRelationInput | Prisma.ScheduleSnoozeOrderByWithRelationInput[]
+  cursor?: Prisma.ScheduleSnoozeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScheduleSnoozeScalarFieldEnum | Prisma.ScheduleSnoozeScalarFieldEnum[]
 }
 
 /**

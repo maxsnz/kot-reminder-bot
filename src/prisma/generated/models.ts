@@ -10,6 +10,7 @@
  */
 export type * from './models/User'
 export type * from './models/Schedule'
+export type * from './models/ScheduleSnooze'
 export type * from './models/ChatMessage'
 export type * from './models/Focus'
 export type * from './models/AiRequest'

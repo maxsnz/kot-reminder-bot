@@ -131,7 +131,18 @@ export class AiResultProcessor {
           chatId,
           confirmationMessage
         );
-        if (!sentMessage) {
+        if (sentMessage) {
+          // Save confirmation message as system message
+          await this.deps.chatMessageService.createMessage({
+            userId: user.id,
+            telegramChatId: chatId.toString(),
+            telegramMessageId: sentMessage.message_id?.toString() ?? null,
+            role: MessageRole.system,
+            text: confirmationMessage,
+            scheduleId: scheduleForConfirmation.schedule.id,
+            focusId: focus.id,
+          });
+        } else {
           logger.warn(
             { chatId, aiRequestId: aiRequest.id },
             "Failed to send schedule confirmation message"

@@ -28,6 +28,11 @@ export type User = Prisma.UserModel
  */
 export type Schedule = Prisma.ScheduleModel
 /**
+ * Model ScheduleSnooze
+ * 
+ */
+export type ScheduleSnooze = Prisma.ScheduleSnoozeModel
+/**
  * Model ChatMessage
  * 
  */

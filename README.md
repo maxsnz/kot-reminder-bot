@@ -2,6 +2,38 @@
 
 Telegram bot for scheduling reminders using AI. Processes natural language messages to create and manage scheduled reminders.
 
+## Bot Commands
+
+### User Commands
+
+- `/start` - Start using the bot and register as a user
+- `/timezone` - View and update your timezone
+- `/list` - Show list of active tasks/reminders
+
+  The list command also works with text messages:
+  - `/list`
+  - `список`, `список задач`, `список напоминаний`
+  - `list`, `tasks`, `reminders`
+  - `таски`, `напоминания`, `задачи`
+
+### Admin Commands
+
+(Only available to admin user)
+
+- `/users` - List all users
+- `/requests` - List AI requests
+- `/health` - System health check
+- `/version` - Show bot version
+- `/settings` - Manage settings
+  - `/settings -set key:value` - Set a setting value
+  - `/settings -get key` - Get a setting value
+- `/removeallmytasks` - Remove all tasks for current user
+
+### Additional Features
+
+- Regular text messages are processed as requests to create reminders (via AI)
+- Snooze callback buttons in reminder messages are handled automatically
+
 ## Setup
 
 1. Install dependencies:

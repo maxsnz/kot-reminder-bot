@@ -1,6 +1,7 @@
 import { Telegraf } from "telegraf";
 import { escapeMarkdownV2 } from "@/utils/escapeMarkdownV2";
 import type { Message } from "telegraf/types";
+import type { InlineKeyboardMarkup } from "telegraf/types";
 import { logger } from "@/utils/logger";
 
 type SendMessageOptions = Parameters<Telegraf["telegram"]["sendMessage"]>[2];
@@ -117,6 +118,7 @@ export class MessageService {
   ): Promise<Message.TextMessage | null> {
     try {
       const escapedText = escapeMarkdownV2PreservingCodeBlocks(text);
+      console.log(escapedText);
       return await this.bot.telegram.sendMessage(chatId, escapedText, {
         ...options,
         parse_mode: "MarkdownV2",
@@ -209,5 +211,83 @@ export class MessageService {
         parse_mode: "MarkdownV2",
       }
     );
+  }
+
+  /**
+   * Send a message with inline keyboard buttons
+   * @param chatId Telegram chat ID
+   * @param text Message text
+   * @param inlineKeyboard Inline keyboard markup
+   * @param options Optional Telegram message options (reply_markup will be overridden)
+   * @returns The sent message, or null if sending failed
+   */
+  async sendMessageWithInlineKeyboard(
+    chatId: number,
+    text: string,
+    inlineKeyboard: InlineKeyboardMarkup,
+    options?: Omit<SendMessageOptions, "reply_markup">
+  ): Promise<Message.TextMessage | null> {
+    try {
+      return await this.bot.telegram.sendMessage(chatId, text, {
+        ...options,
+        reply_markup: inlineKeyboard,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorCode =
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        (error as any).response !== null
+          ? (error as any).response?.error_code
+          : undefined;
+
+      logger.error(
+        {
+          err: error instanceof Error ? error : new Error(String(error)),
+          chatId,
+          errorCode,
+          messagePreview: text.substring(0, 100),
+        },
+        "Failed to send message with inline keyboard"
+      );
+
+      return null;
+    }
+  }
+
+  /**
+   * Remove inline keyboard buttons from a message
+   * @param chatId Telegram chat ID
+   * @param messageId Message ID to edit
+   * @returns True if successful, false otherwise
+   */
+  async removeInlineKeyboard(
+    chatId: number,
+    messageId: number
+  ): Promise<boolean> {
+    try {
+      await this.bot.telegram.editMessageReplyMarkup(
+        chatId,
+        messageId,
+        undefined,
+        {
+          inline_keyboard: [],
+          // reply_markup: undefined,
+        }
+      );
+      return true;
+    } catch (error) {
+      logger.error(
+        {
+          err: error instanceof Error ? error : new Error(String(error)),
+          chatId,
+          messageId,
+        },
+        "Failed to remove inline keyboard"
+      );
+      return false;
+    }
   }
 }

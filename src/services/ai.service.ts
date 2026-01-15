@@ -73,11 +73,8 @@ export class AIService {
     const response = await this.client.responses.create({
       model: "gpt-5-nano",
       prompt_cache_key: `schedule_prompt_${version}`,
+      instructions: SCHEDULE_PROMPT,
       input: [
-        {
-          role: "system",
-          content: SCHEDULE_PROMPT,
-        },
         {
           role: "user",
           content: prompt,

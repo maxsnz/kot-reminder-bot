@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Schedule: 'Schedule',
+  ScheduleSnooze: 'ScheduleSnooze',
   ChatMessage: 'ChatMessage',
   Focus: 'Focus',
   AiRequest: 'AiRequest',
@@ -114,6 +115,18 @@ export const ScheduleScalarFieldEnum = {
 } as const
 
 export type ScheduleScalarFieldEnum = (typeof ScheduleScalarFieldEnum)[keyof typeof ScheduleScalarFieldEnum]
+
+
+export const ScheduleSnoozeScalarFieldEnum = {
+  id: 'id',
+  scheduleId: 'scheduleId',
+  userId: 'userId',
+  message: 'message',
+  runAt: 'runAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ScheduleSnoozeScalarFieldEnum = (typeof ScheduleSnoozeScalarFieldEnum)[keyof typeof ScheduleSnoozeScalarFieldEnum]
 
 
 export const ChatMessageScalarFieldEnum = {

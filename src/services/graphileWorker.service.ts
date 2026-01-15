@@ -75,12 +75,17 @@ export class GraphileWorkerService {
   }
 
   // Delete jobs by jobKey (exact match) or pattern (e.g., "schedule:abc123" or "schedule:%")
+  // FIXME: Using _private_jobs table directly because jobs is a VIEW and cannot be deleted from
+  // This is a workaround - Graphile Worker doesn't provide a built-in function for pattern deletion
+  // We check locked_at IS NULL to avoid deleting jobs that are currently running
   async deleteJobsByKeyPattern(pattern: string): Promise<number> {
     try {
       // Use LIKE for pattern matching (supports % wildcards) or exact match
+      // Delete from _private_jobs table (not the VIEW) and only if not locked
       const result = await this.prisma.$executeRaw`
-        DELETE FROM graphile_worker.jobs
+        DELETE FROM graphile_worker._private_jobs
         WHERE key LIKE ${pattern}
+          AND locked_at IS NULL
       `;
       logger.info(
         { pattern, deletedCount: result },

@@ -39,12 +39,23 @@ export class AdminHandler {
     const chatId = ctx.message?.chat.id;
     if (!chatId) return;
 
-    const usersData = generateObjectsTable(
-      users.map((user) => ({
-        username: user.username,
-        chatId: user.chatId,
-      }))
+    // Get schedule counts for each user
+    const usersWithCounts = await Promise.all(
+      users.map(async (user) => {
+        const activeCount =
+          await this.deps.scheduleService.countActiveByUserId(user.id);
+        const totalCount =
+          await this.deps.scheduleService.countByUserId(user.id);
+        return {
+          username: user.username,
+          chatId: user.chatId,
+          activeSchedules: activeCount,
+          totalSchedules: totalCount,
+        };
+      })
     );
+
+    const usersData = generateObjectsTable(usersWithCounts);
     await this.deps.messageService.sendMarkdownV2(
       chatId,
       "```\n" + usersData + "\n```"
