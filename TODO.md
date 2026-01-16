@@ -1,3 +1,4 @@
+- custom snooze time
+- try to parse user messages by code first, then by AI
+- voice messages support
 - custom user instructions
-- CI/CD
-- webhooks mode for TG

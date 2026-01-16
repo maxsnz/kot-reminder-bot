@@ -10,12 +10,6 @@ Telegram bot for scheduling reminders using AI. Processes natural language messa
 - `/timezone` - View and update your timezone
 - `/list` - Show list of active tasks/reminders
 
-  The list command also works with text messages:
-  - `/list`
-  - `список`, `список задач`, `список напоминаний`
-  - `list`, `tasks`, `reminders`
-  - `таски`, `напоминания`, `задачи`
-
 ### Admin Commands
 
 (Only available to admin user)
