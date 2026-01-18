@@ -41,14 +41,14 @@ export class ScheduleSnoozeService {
       }
     );
 
-    logger.info(
-      {
-        snoozeId: snooze.id,
-        scheduleId: params.scheduleId,
-        runAt: params.runAt.toISOString(),
-      },
-      "Created snooze and scheduled worker job"
-    );
+    // logger.info(
+    //   {
+    //     snoozeId: snooze.id,
+    //     scheduleId: params.scheduleId,
+    //     runAt: params.runAt.toISOString(),
+    //   },
+    //   "Created snooze and scheduled worker job"
+    // );
 
     return snooze;
   }
@@ -65,9 +65,7 @@ export class ScheduleSnoozeService {
   /**
    * Find snooze by ID with schedule and user relations
    */
-  async findByIdWithRelations(
-    id: string
-  ): Promise<
+  async findByIdWithRelations(id: string): Promise<
     | (ScheduleSnooze & {
         schedule: { id: string; message: string; emoji: string | null } | null;
         user: { id: string; chatId: number; timezone: string | null } | null;
@@ -169,7 +167,7 @@ export class ScheduleSnoozeService {
     const jobKeyPattern = `snooze:${id}`;
     try {
       await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
-      logger.info({ snoozeId: id }, "Deleted worker jobs for snooze");
+      // logger.info({ snoozeId: id }, "Deleted worker jobs for snooze");
     } catch (error) {
       logger.error(
         { err: error, snoozeId: id },
@@ -182,7 +180,7 @@ export class ScheduleSnoozeService {
       where: { id },
     });
 
-    logger.info({ snoozeId: id }, "Deleted snooze");
+    // logger.info({ snoozeId: id }, "Deleted snooze");
   }
 
   /**

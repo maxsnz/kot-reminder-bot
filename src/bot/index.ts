@@ -7,7 +7,7 @@ import { AdminHandler } from "./handlers/admin.handler";
 import { TextMessageHandler } from "./handlers/text-message.handler";
 import { UserCommandsHandler } from "./handlers/list.handler";
 import { SnoozeCallbackHandler } from "./handlers/snooze-callback.handler";
-import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
+// import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
 import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
 import { LIST_COMMANDS } from "@/config/constants";
@@ -105,7 +105,8 @@ export const startBot = (deps: BotDependencies) => {
     // Handle snooze and dismiss callbacks
     if (
       typeof callbackData === "string" &&
-      (callbackData.startsWith("snooze:") || callbackData.startsWith("dismiss:"))
+      (callbackData.startsWith("snooze:") ||
+        callbackData.startsWith("dismiss:"))
     ) {
       snoozeCallbackHandler.handle(ctx);
     }

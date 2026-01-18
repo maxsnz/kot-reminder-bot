@@ -16,10 +16,12 @@ export function createScheduleSnoozeTask(
     const jobData = payload as ScheduleSnoozeJobData;
     const { snoozeId } = jobData;
 
-    logger.info({ snoozeId }, "Processing schedule snooze");
+    // logger.info({ snoozeId }, "Processing schedule snooze");
 
     try {
-      const snooze = await scheduleSnoozeService.findByIdWithRelations(snoozeId);
+      const snooze = await scheduleSnoozeService.findByIdWithRelations(
+        snoozeId
+      );
       if (!snooze) {
         logger.error({ snoozeId }, "Snooze not found");
         return;
@@ -43,17 +45,24 @@ export function createScheduleSnoozeTask(
       // Create inline keyboard with snooze buttons
       const inlineKeyboard = createSnoozeKeyboard(schedule.id);
 
+      const message = `${schedule.emoji ?? ""} ${snooze.message}`;
+
       // Send snooze reminder message with inline keyboard buttons
       const sentMessage = await messageService.sendMessageWithInlineKeyboard(
         user.chatId,
-        `${schedule.emoji ?? ""} ${snooze.message}`,
+        message,
         inlineKeyboard
       );
 
       if (sentMessage) {
         logger.info(
-          { userId: user.id, snoozeId: snooze.id, scheduleId: schedule.id },
-          "Sent snooze reminder message to user"
+          {
+            userId: user.id,
+            snoozeId: snooze.id,
+            scheduleId: schedule.id,
+            message,
+          },
+          `Sent snooze reminder message to user`
         );
       } else {
         logger.warn(
@@ -65,7 +74,7 @@ export function createScheduleSnoozeTask(
       // Delete snooze after execution (one-time execution)
       await scheduleSnoozeService.deleteSnooze(snoozeId);
 
-      logger.info({ snoozeId }, "Schedule snooze processed successfully");
+      // logger.info({ snoozeId }, "Schedule snooze processed successfully");
     } catch (error) {
       logger.error(
         {

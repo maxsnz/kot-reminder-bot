@@ -87,7 +87,7 @@ export class GraphileWorkerService {
         WHERE key LIKE ${pattern}
           AND locked_at IS NULL
       `;
-      logger.info(
+      logger.debug(
         { pattern, deletedCount: result },
         "Deleted jobs by key pattern"
       );

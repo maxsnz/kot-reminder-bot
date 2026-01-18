@@ -27,7 +27,7 @@ export function createScheduleReminderTask(
     const jobData = payload as ScheduleReminderJobData;
     const { scheduleId, timezone } = jobData;
 
-    logger.info({ scheduleId }, "Processing schedule reminder");
+    // logger.info({ scheduleId }, "Processing schedule reminder");
 
     try {
       const schedule = await scheduleService.findById(scheduleId);
@@ -54,10 +54,12 @@ export function createScheduleReminderTask(
       // Create inline keyboard with snooze buttons
       const inlineKeyboard = createSnoozeKeyboard(schedule.id);
 
+      const message = `${schedule.emoji ?? ""} ${schedule.message}`;
+
       // Send message with inline keyboard buttons
       const sentMessage = await messageService.sendMessageWithInlineKeyboard(
         user.chatId,
-        `${schedule.emoji ?? ""} ${schedule.message}`,
+        message,
         inlineKeyboard
       );
 
@@ -65,8 +67,8 @@ export function createScheduleReminderTask(
 
       if (sentMessage) {
         logger.info(
-          { userId: user.id, scheduleId: schedule.id },
-          "Sent message to user for schedule"
+          { userId: user.id, scheduleId: schedule.id, message },
+          `Sent message to user ${user.username} for schedule`
         );
       } else {
         logger.warn(
@@ -89,11 +91,6 @@ export function createScheduleReminderTask(
         });
 
         await userService.setFocus(user.id, focus.id);
-
-        logger.info(
-          { userId: user.id, scheduleId: schedule.id, focusId: focus.id },
-          "Created system message and updated user focus"
-        );
       } else {
         logger.warn(
           { scheduleId: schedule.id },
@@ -114,13 +111,6 @@ export function createScheduleReminderTask(
             runAt: nextRunAt,
           }
         );
-        logger.info(
-          {
-            scheduleId: schedule.id,
-            nextRunAt: nextRunAt.toISOString(),
-          },
-          "Scheduled next reminder for schedule"
-        );
       } else {
         await scheduleService.endSchedule(schedule.id);
         logger.info(
@@ -129,7 +119,7 @@ export function createScheduleReminderTask(
         );
       }
 
-      logger.info({ scheduleId }, "Schedule reminder processed successfully");
+      // logger.info({ scheduleId }, "Schedule reminder processed successfully");
     } catch (error) {
       logger.error(
         {
