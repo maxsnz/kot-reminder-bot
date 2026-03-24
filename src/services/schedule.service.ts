@@ -219,7 +219,7 @@ export class ScheduleService {
     const jobKeyPattern = `schedule:${id}`;
     try {
       await this.graphileWorkerService.deleteJobsByKeyPattern(jobKeyPattern);
-      logger.info({ scheduleId: id }, "Deleted worker jobs for ended schedule");
+      logger.debug({ scheduleId: id }, "Deleted worker jobs for ended schedule");
     } catch (error) {
       logger.error(
         { err: error, scheduleId: id },
