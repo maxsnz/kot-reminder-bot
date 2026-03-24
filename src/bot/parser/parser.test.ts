@@ -64,6 +64,22 @@ describe("tokenizer", () => {
       expect(r.tokens).toContainEqual({ type: "TEXT", value: "пицца" });
     });
 
+    test("через 2 минуты - покукарекать (дефис-разделитель убирается)", () => {
+      const r = tokenize("через 2 минуты - покукарекать");
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.tokens).toContainEqual({ type: "RELATIVE", minutes: 2 });
+      expect(r.tokens).toContainEqual({ type: "TEXT", value: "покукарекать" });
+    });
+
+    test("через 2 минуты — покукарекать (тире-разделитель убирается)", () => {
+      const r = tokenize("через 2 минуты — покукарекать");
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.tokens).toContainEqual({ type: "RELATIVE", minutes: 2 });
+      expect(r.tokens).toContainEqual({ type: "TEXT", value: "покукарекать" });
+    });
+
     test("через 2 часа позвонить маме", () => {
       const r = tokenize("через 2 часа позвонить маме");
       expect(r.ok).toBe(true);

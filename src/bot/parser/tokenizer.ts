@@ -52,7 +52,12 @@ function parseNumberWord(word: string): number | null {
 // ── Normalize ─────────────────────────────────────────────────────────────────
 
 function normalize(text: string): string {
-  return text.toLowerCase().trim().replace(/\s+/g, " ");
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/(?<=\s|^)[-–—]+(?=\s|$)/g, "") // дефисы и тире как разделители → убрать
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // ── RELATIVE token ────────────────────────────────────────────────────────────
