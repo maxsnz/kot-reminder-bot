@@ -296,6 +296,38 @@ describe("tryParseMessage", () => {
     });
   });
 
+  describe("calendar-date", () => {
+    test("23 июня в 10 утра - петь песню", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("23 июня в 10 утра - петь песню", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2026-06-23");
+        expect(s.runAtTimes[0]).toBe("10:00");
+        expect(s.message).toBe("петь песню");
+      });
+    });
+
+    test("5 марта в 14:00 встреча (дата в прошлом → следующий год)", () => {
+      withFixedNow(() => {
+        // fixed now = 2026-03-24, March 5 already passed
+        const r = tryParseMessage("5 марта в 14:00 встреча", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2027-03-05");
+        expect(s.runAtTimes[0]).toBe("14:00");
+        expect(s.message).toBe("встреча");
+      });
+    });
+
+    test("1 января в 00:00 новый год", () => {
+      withFixedNow(() => {
+        // fixed now = 2026-03-24, January already passed
+        const r = tryParseMessage("1 января в 00:00 новый год", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2027-01-01");
+      });
+    });
+  });
+
   describe("edge cases", () => {
     test("пустая строка → no_text", () => {
       const r = tryParseMessage("", TZ);

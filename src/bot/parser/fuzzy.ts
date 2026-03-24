@@ -94,6 +94,17 @@ export const DURATION_UNIT_KEYWORDS: Record<string, "minutes" | "hours" | "days"
 
 export const DURATION_UNIT_DICTIONARY = Object.keys(DURATION_UNIT_KEYWORDS);
 
+export const MONTH_KEYWORDS: Record<string, number> = {
+  // genitive (most common: "23 июня")
+  января: 1, февраля: 2, марта: 3, апреля: 4, мая: 5, июня: 6,
+  июля: 7, августа: 8, сентября: 9, октября: 10, ноября: 11, декабря: 12,
+  // nominative
+  январь: 1, февраль: 2, март: 3, апрель: 4, май: 5, июнь: 6,
+  июль: 7, август: 8, сентябрь: 9, октябрь: 10, ноябрь: 11, декабрь: 12,
+};
+
+export const MONTH_DICTIONARY = Object.keys(MONTH_KEYWORDS);
+
 export const STOP_WORDS = new Set([
   "напомни",
   "напоминай",

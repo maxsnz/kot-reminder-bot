@@ -31,6 +31,7 @@ export interface Mask {
 
 import { relativeTimeMask } from "./relative-time.mask";
 import { tomorrowTimeMask } from "./tomorrow-time.mask";
+import { calendarDateMask } from "./calendar-date.mask";
 import { dayOfWeekMask } from "./day-of-week.mask";
 import { todayTimeMask } from "./today-time.mask";
 
@@ -46,6 +47,7 @@ import { todayTimeMask } from "./today-time.mask";
 export const MASKS: Mask[] = [
   relativeTimeMask,    // "через X минут/часов"
   tomorrowTimeMask,    // "завтра / послезавтра в HH:MM"
+  calendarDateMask,    // "23 июня в HH:MM"
   dayOfWeekMask,       // "в пятницу в HH:MM"
   todayTimeMask,       // "в HH:MM" (сегодня)
 ];

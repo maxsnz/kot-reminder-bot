@@ -6,6 +6,8 @@ import {
   TIME_WORD_DICTIONARY,
   DURATION_UNIT_KEYWORDS,
   DURATION_UNIT_DICTIONARY,
+  MONTH_KEYWORDS,
+  MONTH_DICTIONARY,
   STOP_WORDS,
 } from "./fuzzy";
 
@@ -25,6 +27,7 @@ export type DateValue = "today" | "tomorrow" | "day_after_tomorrow" | DayOfWeek;
 export type Token =
   | { type: "RELATIVE"; minutes: number }
   | { type: "DATE"; date: DateValue }
+  | { type: "CALENDAR_DATE"; day: number; month: number }
   | { type: "TIME"; hours: number; minutes: number }
   | { type: "TEXT"; value: string };
 
@@ -124,6 +127,32 @@ function extractDate(text: string): { token: Token & { type: "DATE" }; rest: str
     }
   }
   return null;
+}
+
+// ── CALENDAR_DATE token ───────────────────────────────────────────────────────
+// Matches: "23 июня", "5 марта", "1-го января"
+
+const CALENDAR_DATE_REGEX = /(?<!\d)(\d{1,2})(?:-го)?\s+([а-яё]+)/;
+
+function extractCalendarDate(text: string): { token: Token & { type: "CALENDAR_DATE" }; rest: string } | null {
+  const match = text.match(CALENDAR_DATE_REGEX);
+  if (!match) return null;
+
+  const day = parseInt(match[1], 10);
+  if (day < 1 || day > 31) return null;
+
+  const rawMonth = match[2];
+  const month =
+    MONTH_KEYWORDS[rawMonth] ??
+    (() => {
+      const closest = findClosest(rawMonth, MONTH_DICTIONARY);
+      return closest ? MONTH_KEYWORDS[closest] : null;
+    })();
+
+  if (!month) return null;
+
+  const rest = text.replace(match[0], "").replace(/\s+/g, " ").trim();
+  return { token: { type: "CALENDAR_DATE", day, month }, rest };
 }
 
 // ── TIME token ────────────────────────────────────────────────────────────────
@@ -243,6 +272,12 @@ export function tokenize(input: string): TokenizerResult {
     if (date) {
       tokens.push(date.token);
       text = date.rest;
+    } else {
+      const calDate = extractCalendarDate(text);
+      if (calDate) {
+        tokens.push(calDate.token);
+        text = calDate.rest;
+      }
     }
   }
 
