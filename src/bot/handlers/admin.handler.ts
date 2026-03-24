@@ -3,7 +3,6 @@ import { performance } from "perf_hooks";
 import { UserService } from "@/services/user.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { MessageService } from "@/services/message.service";
-import { generateObjectsTable } from "@/utils/generateTable";
 import { env } from "@/config/env";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { SettingService } from "@/services/setting.service";
@@ -55,11 +54,12 @@ export class AdminHandler {
       })
     );
 
-    const usersData = generateObjectsTable(usersWithCounts);
-    await this.deps.messageService.sendMarkdownV2(
-      chatId,
-      "```\n" + usersData + "\n```"
-    );
+    const lines = usersWithCounts.map((u) => {
+      const name = `@${u.username ?? u.chatId}`.padEnd(20);
+      return `${name} ${u.activeSchedules}/${u.totalSchedules} schedules`;
+    });
+    const usersData = `Users: ${usersWithCounts.length}\n\n${lines.join("\n")}`;
+    await this.deps.messageService.sendMessage(chatId, usersData);
   }
 
   async handleMessages(ctx: Context) {

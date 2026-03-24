@@ -291,12 +291,17 @@ function formatRecurringFrequency(
   }
 
   // Add date range if applicable
+  const startIsFuture = startAtDate && !isDateInPast(startAtDate, timezone);
   if (startAtDate && endAtDate) {
-    const startFormatted = formatDateShort(startAtDate, timezone);
     const endFormatted = formatDateShort(endAtDate, timezone);
-    frequencyStr = `${frequencyStr} с ${startFormatted} по ${endFormatted}`;
+    if (startIsFuture) {
+      const startFormatted = formatDateShort(startAtDate, timezone);
+      frequencyStr = `${frequencyStr} с ${startFormatted} по ${endFormatted}`;
+    } else {
+      frequencyStr = `${frequencyStr} до ${endFormatted}`;
+    }
     hasRange = true;
-  } else if (startAtDate) {
+  } else if (startAtDate && startIsFuture) {
     const startFormatted = formatDateShort(startAtDate, timezone);
     frequencyStr = `${frequencyStr} с ${startFormatted}`;
     hasRange = true;
@@ -307,6 +312,25 @@ function formatRecurringFrequency(
   }
 
   return { frequency: frequencyStr, hasRange };
+}
+
+/**
+ * Returns true if the date string (YYYY-MM-DD) is strictly in the past
+ * relative to today in the given timezone.
+ */
+function isDateInPast(dateStr: string, timezone: string): boolean {
+  try {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const today = formatter.format(new Date()); // "YYYY-MM-DD"
+    return dateStr < today;
+  } catch {
+    return false;
+  }
 }
 
 /**
