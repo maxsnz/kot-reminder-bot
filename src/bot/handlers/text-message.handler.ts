@@ -62,7 +62,16 @@ export class TextMessageHandler {
         const parsed = tryParseMessage(messageText, user.timezone);
 
         if (!parsed.ok && parsed.reason === "no_text") {
-          await this.deps.messageService.sendMessage(chatId, "Уточните запрос");
+          const replyText = "Уточните запрос";
+          const sentMessage = await this.deps.messageService.sendMessage(chatId, replyText);
+          await this.deps.chatMessageService.createMessage({
+            userId: user.id,
+            telegramChatId: chatId.toString(),
+            telegramMessageId: sentMessage?.message_id.toString() ?? null,
+            role: MessageRole.assistant,
+            text: replyText,
+            focusId: focus.id,
+          });
           return;
         }
 
