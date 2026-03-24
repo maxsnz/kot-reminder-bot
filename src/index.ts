@@ -15,6 +15,7 @@ import { createAiRequestTask } from "./workers/ai-request.worker";
 import { createAiResultTask } from "./workers/ai-result.worker";
 import { createScheduleReminderTask } from "./workers/schedule-reminder.worker";
 import { createScheduleSnoozeTask } from "./workers/schedule-snooze.worker";
+import { createVoiceTranscriptionTask } from "./workers/voice-transcription.worker";
 import { AiResultProcessor } from "./bot/processors/ai-result.processor";
 import { ScheduleActionProcessor } from "./bot/processors/schedule-action.processor";
 import { logger } from "./utils/logger";
@@ -42,7 +43,7 @@ async function main() {
   const aiRequestService = new AiRequestService(dbClient);
 
   const telegramToken = env.TELEGRAM_TOKEN;
-  const bot = startBot({
+  const { bot, userTextInputProcessor } = startBot({
     userService,
     telegramToken,
     chatMessageService,
@@ -97,6 +98,14 @@ async function main() {
     "schedule-snooze": createScheduleSnoozeTask(
       scheduleSnoozeService,
       messageService
+    ),
+    "voice-transcription": createVoiceTranscriptionTask(
+      aiService,
+      userService,
+      messageService,
+      userTextInputProcessor,
+      bot,
+      telegramToken
     ),
   };
 

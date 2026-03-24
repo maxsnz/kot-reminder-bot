@@ -5,10 +5,12 @@ import { StartHandler } from "./handlers/start.handler";
 import { TimezoneHandler } from "./handlers/timezone.handler";
 import { AdminHandler } from "./handlers/admin.handler";
 import { TextMessageHandler } from "./handlers/text-message.handler";
+import { VoiceMessageHandler } from "./handlers/voice-message.handler";
 import { UserCommandsHandler } from "./handlers/list.handler";
 import { SnoozeCallbackHandler } from "./handlers/snooze-callback.handler";
 import { ParserConfirmHandler } from "./handlers/parser-confirm.handler";
 import { CustomSnoozeStateStore } from "./state/customSnoozeState";
+import { UserTextInputProcessor } from "./processors/user-text-input.processor";
 // import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
 import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
@@ -23,8 +25,18 @@ export const startBot = (deps: BotDependencies) => {
   logger.info("Bot created");
 
   const customSnoozeState = new CustomSnoozeStateStore();
-
   const messageService = new MessageService(bot);
+
+  const userTextInputProcessor = new UserTextInputProcessor({
+    focusService: deps.focusService,
+    chatMessageService: deps.chatMessageService,
+    scheduleService: deps.scheduleService,
+    scheduleSnoozeService: deps.scheduleSnoozeService,
+    aiRequestService: deps.aiRequestService,
+    graphileWorkerService: deps.graphileWorkerService,
+    messageService,
+    customSnoozeState,
+  });
 
   const startHandler = new StartHandler({
     userService: deps.userService,
@@ -56,14 +68,14 @@ export const startBot = (deps: BotDependencies) => {
 
   const textMessageHandler = new TextMessageHandler({
     userService: deps.userService,
-    focusService: deps.focusService,
-    chatMessageService: deps.chatMessageService,
-    scheduleService: deps.scheduleService,
-    aiRequestService: deps.aiRequestService,
-    graphileWorkerService: deps.graphileWorkerService,
     messageService,
-    scheduleSnoozeService: deps.scheduleSnoozeService,
-    customSnoozeState,
+    userTextInputProcessor,
+  });
+
+  const voiceMessageHandler = new VoiceMessageHandler({
+    userService: deps.userService,
+    messageService,
+    graphileWorkerService: deps.graphileWorkerService,
   });
 
   const snoozeCallbackHandler = new SnoozeCallbackHandler({
@@ -99,6 +111,8 @@ export const startBot = (deps: BotDependencies) => {
     adminHandler.handleRemoveAllMyTasks(ctx)
   );
 
+  bot.on(message("voice"), (ctx) => voiceMessageHandler.handle(ctx));
+
   bot.on(message("text"), (ctx) => {
     const entities = ctx.message.entities || [];
     const isCommand = entities.some((e) => e.type === "bot_command");
@@ -119,7 +133,6 @@ export const startBot = (deps: BotDependencies) => {
     }
 
     const callbackData = ctx.callbackQuery.data;
-    // Handle snooze and dismiss callbacks
     if (typeof callbackData === "string") {
       if (
         callbackData.startsWith("snooze:") ||
@@ -136,12 +149,10 @@ export const startBot = (deps: BotDependencies) => {
 
   bot.launch().catch((e) => {
     logger.error(
-      {
-        err: e instanceof Error ? e : new Error(String(e)),
-      },
+      { err: e instanceof Error ? e : new Error(String(e)) },
       "Failed to launch bot"
     );
   });
 
-  return bot;
+  return { bot, userTextInputProcessor };
 };

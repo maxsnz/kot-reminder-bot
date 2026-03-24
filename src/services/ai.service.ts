@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { SCHEDULE_PROMPT, responseSchema } from "@/bot/prompt";
@@ -67,6 +67,16 @@ export class AIService {
       // @ts-expect-error
       fetch: this.createFetch(),
     });
+  }
+
+  async transcribeAudio(buffer: Buffer, filename: string): Promise<string> {
+    const file = await toFile(buffer, filename, { type: "audio/ogg" });
+    const response = await this.client.audio.transcriptions.create({
+      file,
+      model: "whisper-1",
+      language: "ru",
+    });
+    return response.text;
   }
 
   async processMessage(prompt: string) {

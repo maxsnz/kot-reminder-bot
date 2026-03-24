@@ -1,25 +1,25 @@
 import { Context } from "telegraf";
 import { UserService } from "@/services/user.service";
 import { MessageService } from "@/services/message.service";
-import { UserTextInputProcessor } from "@/bot/processors/user-text-input.processor";
+import { GraphileWorkerService } from "@/services/graphileWorker.service";
 import { logger } from "@/utils/logger";
 
-export interface TextMessageHandlerDependencies {
+export interface VoiceMessageHandlerDependencies {
   userService: UserService;
   messageService: MessageService;
-  userTextInputProcessor: UserTextInputProcessor;
+  graphileWorkerService: GraphileWorkerService;
 }
 
-export class TextMessageHandler {
-  constructor(private deps: TextMessageHandlerDependencies) {}
+export class VoiceMessageHandler {
+  constructor(private deps: VoiceMessageHandlerDependencies) {}
 
   async handle(ctx: Context) {
     try {
-      if (!ctx.message || !("text" in ctx.message)) return;
+      if (!ctx.message || !("voice" in ctx.message)) return;
 
       const chatId = ctx.message.chat.id;
-      const messageText = ctx.message.text;
-      if (!messageText) return;
+      const fileId = ctx.message.voice.file_id;
+      const telegramMessageId = ctx.message.message_id.toString();
 
       const user = await this.deps.userService.findByChatId(chatId);
       if (!user) {
@@ -30,16 +30,18 @@ export class TextMessageHandler {
         return;
       }
 
-      await this.deps.userTextInputProcessor.process(
-        user,
+      await this.deps.messageService.sendMessage(chatId, "🎤 Распознаю голосовое...");
+
+      await this.deps.graphileWorkerService.addJob("voice-transcription", {
+        userId: user.id,
         chatId,
-        messageText,
-        ctx.message.message_id.toString()
-      );
+        fileId,
+        telegramMessageId,
+      });
     } catch (e) {
       logger.error(
         { err: e instanceof Error ? e : new Error(String(e)) },
-        "Error handling text message"
+        "Error handling voice message"
       );
       const chatId = ctx.message?.chat.id;
       if (chatId) {
