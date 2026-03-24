@@ -7,6 +7,7 @@ import { AdminHandler } from "./handlers/admin.handler";
 import { TextMessageHandler } from "./handlers/text-message.handler";
 import { UserCommandsHandler } from "./handlers/list.handler";
 import { SnoozeCallbackHandler } from "./handlers/snooze-callback.handler";
+import { ParserConfirmHandler } from "./handlers/parser-confirm.handler";
 // import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
 import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
@@ -69,6 +70,16 @@ export const startBot = (deps: BotDependencies) => {
     focusService: deps.focusService,
   });
 
+  const parserConfirmHandler = new ParserConfirmHandler({
+    userService: deps.userService,
+    focusService: deps.focusService,
+    chatMessageService: deps.chatMessageService,
+    scheduleService: deps.scheduleService,
+    aiRequestService: deps.aiRequestService,
+    graphileWorkerService: deps.graphileWorkerService,
+    messageService,
+  });
+
   bot.command("start", (ctx) => startHandler.handle(ctx));
   bot.command("timezone", (ctx) => timezoneHandler.handle(ctx));
   bot.command("users", (ctx) => adminHandler.handleUsers(ctx));
@@ -103,12 +114,12 @@ export const startBot = (deps: BotDependencies) => {
 
     const callbackData = ctx.callbackQuery.data;
     // Handle snooze and dismiss callbacks
-    if (
-      typeof callbackData === "string" &&
-      (callbackData.startsWith("snooze:") ||
-        callbackData.startsWith("dismiss:"))
-    ) {
-      snoozeCallbackHandler.handle(ctx);
+    if (typeof callbackData === "string") {
+      if (callbackData.startsWith("snooze:") || callbackData.startsWith("dismiss:")) {
+        snoozeCallbackHandler.handle(ctx);
+      } else if (callbackData.startsWith("parser:")) {
+        parserConfirmHandler.handle(ctx);
+      }
     }
   });
 

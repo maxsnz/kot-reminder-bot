@@ -233,7 +233,7 @@ actionSummary - краткое описание действия, которое
 Любая смена темы - это новый контекст.
 `;
 
-enum ScheduleKind {
+export enum ScheduleKind {
   one_time = "one_time",
   recurring = "recurring",
 }
