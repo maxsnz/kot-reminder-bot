@@ -11,6 +11,10 @@ import { logger } from "@/utils/logger";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
 import { tryParseMessage } from "@/bot/parser/index";
+import { ScheduleSnoozeService } from "@/services/scheduleSnooze.service";
+import { CustomSnoozeStateStore } from "@/bot/state/customSnoozeState";
+import { parseSnoozeInput } from "@/bot/parser/parseSnoozeInput";
+import { formatSnoozeConfirmation } from "@/utils/formatScheduleConfirmation";
 
 export interface TextMessageHandlerDependencies {
   userService: UserService;
@@ -20,6 +24,8 @@ export interface TextMessageHandlerDependencies {
   aiRequestService: AiRequestService;
   graphileWorkerService: GraphileWorkerService;
   messageService: MessageService;
+  scheduleSnoozeService: ScheduleSnoozeService;
+  customSnoozeState: CustomSnoozeStateStore;
 }
 
 export class TextMessageHandler {
@@ -39,6 +45,53 @@ export class TextMessageHandler {
           chatId,
           `Привет, кажется мы не знакомы. Чтобы начать, пожалуйста, отправь команду /start`
         );
+        return;
+      }
+
+      // Handle pending custom snooze input
+      const pendingSnooze = this.deps.customSnoozeState.get(user.id);
+      if (pendingSnooze) {
+        if (!user.timezone) {
+          await this.deps.messageService.sendMessage(chatId, "Ошибка: не установлен часовой пояс");
+          return;
+        }
+        const result = parseSnoozeInput(messageText, user.timezone, new Date());
+        if (result.ok) {
+          const schedule = await this.deps.scheduleService.findById(pendingSnooze.scheduleId);
+          if (!schedule) {
+            this.deps.customSnoozeState.delete(user.id);
+            await this.deps.messageService.sendMessage(chatId, "Ошибка: напоминание не найдено");
+            return;
+          }
+          await this.deps.scheduleSnoozeService.createSnooze({
+            scheduleId: pendingSnooze.scheduleId,
+            userId: user.id,
+            message: schedule.message,
+            runAt: result.runAt,
+          });
+          await this.deps.messageService.removeInlineKeyboard(pendingSnooze.chatId, pendingSnooze.promptMessageId);
+          this.deps.customSnoozeState.delete(user.id);
+          const confirmationText = formatSnoozeConfirmation(result.runAt, schedule.message, user.timezone);
+          await this.deps.messageService.sendMessage(chatId, confirmationText);
+        } else if (result.reason === "time_in_past") {
+          await this.deps.messageService.sendMessageWithInlineKeyboard(
+            chatId,
+            "Это время уже прошло, попробуйте ещё раз",
+            { inline_keyboard: [[{ text: "Отмена", callback_data: `snooze_custom_cancel:${pendingSnooze.scheduleId}` }]] }
+          );
+        } else if (result.reason === "ambiguous_time") {
+          await this.deps.messageService.sendMessageWithInlineKeyboard(
+            chatId,
+            "Уточните время: утро или вечер?",
+            { inline_keyboard: [[{ text: "Отмена", callback_data: `snooze_custom_cancel:${pendingSnooze.scheduleId}` }]] }
+          );
+        } else {
+          await this.deps.messageService.sendMessageWithInlineKeyboard(
+            chatId,
+            "Не понял, уточните: например, через 2 часа или завтра в 10 утра",
+            { inline_keyboard: [[{ text: "Отмена", callback_data: `snooze_custom_cancel:${pendingSnooze.scheduleId}` }]] }
+          );
+        }
         return;
       }
 

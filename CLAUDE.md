@@ -49,6 +49,16 @@ src/
       ai-result.processor.ts      — routes AI action to appropriate handler
       schedule-action.processor.ts — executes schedule CRUD
       prompt-new.ts               — (WIP) new simplified context flow
+    state/
+      customSnoozeState.ts        — in-memory store for pending custom snooze input (TTL 5 min)
+    parser/
+      SPEC.md                     — parser feature spec
+      index.ts                    — exports tryParseMessage()
+      tokenizer.ts                — tokenizes user text into typed tokens
+      parseSnoozeInput.ts         — parses custom snooze duration input (reuses tokenizer)
+      fuzzy.ts                    — Levenshtein fuzzy matching
+      time-utils.ts               — timezone-aware date helpers
+      masks/                      — parse masks (relative-time, today-time, tomorrow-time, day-of-week)
   services/
     database.service.ts           — PrismaClient wrapper
     user.service.ts

@@ -8,6 +8,7 @@ import { TextMessageHandler } from "./handlers/text-message.handler";
 import { UserCommandsHandler } from "./handlers/list.handler";
 import { SnoozeCallbackHandler } from "./handlers/snooze-callback.handler";
 import { ParserConfirmHandler } from "./handlers/parser-confirm.handler";
+import { CustomSnoozeStateStore } from "./state/customSnoozeState";
 // import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
 import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
@@ -20,6 +21,8 @@ export const startBot = (deps: BotDependencies) => {
 
   const bot = new Telegraf(deps.telegramToken);
   logger.info("Bot created");
+
+  const customSnoozeState = new CustomSnoozeStateStore();
 
   const messageService = new MessageService(bot);
 
@@ -59,6 +62,8 @@ export const startBot = (deps: BotDependencies) => {
     aiRequestService: deps.aiRequestService,
     graphileWorkerService: deps.graphileWorkerService,
     messageService,
+    scheduleSnoozeService: deps.scheduleSnoozeService,
+    customSnoozeState,
   });
 
   const snoozeCallbackHandler = new SnoozeCallbackHandler({
@@ -68,6 +73,7 @@ export const startBot = (deps: BotDependencies) => {
     messageService,
     chatMessageService: deps.chatMessageService,
     focusService: deps.focusService,
+    customSnoozeState,
   });
 
   const parserConfirmHandler = new ParserConfirmHandler({
@@ -115,7 +121,12 @@ export const startBot = (deps: BotDependencies) => {
     const callbackData = ctx.callbackQuery.data;
     // Handle snooze and dismiss callbacks
     if (typeof callbackData === "string") {
-      if (callbackData.startsWith("snooze:") || callbackData.startsWith("dismiss:")) {
+      if (
+        callbackData.startsWith("snooze:") ||
+        callbackData.startsWith("snooze_custom:") ||
+        callbackData.startsWith("snooze_custom_cancel:") ||
+        callbackData.startsWith("dismiss:")
+      ) {
         snoozeCallbackHandler.handle(ctx);
       } else if (callbackData.startsWith("parser:")) {
         parserConfirmHandler.handle(ctx);

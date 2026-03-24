@@ -8,6 +8,7 @@ import { FocusService } from "@/services/focus.service";
 import { MessageRole } from "@/prisma/generated/client";
 import { formatSnoozeConfirmation } from "@/utils/formatScheduleConfirmation";
 import { logger } from "@/utils/logger";
+import { CustomSnoozeStateStore } from "@/bot/state/customSnoozeState";
 
 export interface SnoozeCallbackHandlerDependencies {
   scheduleSnoozeService: ScheduleSnoozeService;
@@ -16,6 +17,7 @@ export interface SnoozeCallbackHandlerDependencies {
   messageService: MessageService;
   chatMessageService: ChatMessageService;
   focusService: FocusService;
+  customSnoozeState: CustomSnoozeStateStore;
 }
 
 export class SnoozeCallbackHandler {
@@ -36,6 +38,74 @@ export class SnoozeCallbackHandler {
     if (!chatId) {
       logger.error({ callbackData }, "Chat ID not found in callback query");
       await ctx.answerCbQuery("Ошибка: не удалось определить чат");
+      return;
+    }
+
+    // Handle custom snooze cancel callback
+    if (callbackData.startsWith("snooze_custom_cancel:")) {
+      const cancelMatch = callbackData.match(/^snooze_custom_cancel:(.+)$/);
+      if (cancelMatch) {
+        const user = await this.deps.userService.findByChatId(chatId);
+        if (user) {
+          const pending = this.deps.customSnoozeState.get(user.id);
+          this.deps.customSnoozeState.delete(user.id);
+          if (pending && messageId) {
+            await this.deps.messageService.removeInlineKeyboard(chatId, pending.promptMessageId);
+          }
+        }
+        await ctx.answerCbQuery();
+      } else {
+        await ctx.answerCbQuery("Ошибка");
+      }
+      return;
+    }
+
+    // Handle custom snooze request: ask user for snooze duration
+    if (callbackData.startsWith("snooze_custom:")) {
+      const customMatch = callbackData.match(/^snooze_custom:(.+)$/);
+      if (!customMatch) {
+        await ctx.answerCbQuery("Ошибка: неверный формат данных");
+        return;
+      }
+      const scheduleId = customMatch[1];
+      try {
+        const user = await this.deps.userService.findByChatId(chatId);
+        if (!user) {
+          await ctx.answerCbQuery("Ошибка: пользователь не найден");
+          return;
+        }
+        const schedule = await this.deps.scheduleService.findById(scheduleId);
+        if (!schedule || schedule.userId !== user.id) {
+          await ctx.answerCbQuery("Ошибка: напоминание не найдено");
+          return;
+        }
+        if (messageId) {
+          await this.deps.messageService.removeInlineKeyboard(chatId, messageId);
+        }
+        const prompt = await this.deps.messageService.sendMessageWithInlineKeyboard(
+          chatId,
+          "Через сколько напомнить?",
+          {
+            inline_keyboard: [[
+              { text: "Отмена", callback_data: `snooze_custom_cancel:${scheduleId}` },
+            ]],
+          }
+        );
+        if (prompt) {
+          this.deps.customSnoozeState.set(user.id, {
+            scheduleId,
+            promptMessageId: prompt.message_id,
+            chatId,
+          });
+        }
+        await ctx.answerCbQuery();
+      } catch (error) {
+        logger.error(
+          { err: error instanceof Error ? error : new Error(String(error)), callbackData },
+          "Failed to process snooze_custom callback"
+        );
+        await ctx.answerCbQuery("Ошибка");
+      }
       return;
     }
 

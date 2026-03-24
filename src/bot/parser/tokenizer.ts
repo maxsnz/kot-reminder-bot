@@ -54,7 +54,7 @@ function parseNumberWord(word: string): number | null {
 
 // ── Normalize ─────────────────────────────────────────────────────────────────
 
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text
     .toLowerCase()
     .trim()
@@ -68,7 +68,7 @@ function normalize(text: string): string {
 
 const RELATIVE_REGEX = /через\s+(\d+|[а-яё]+)\s+([а-яё]+)/;
 
-function extractRelative(text: string): { token: Token & { type: "RELATIVE" }; rest: string } | null {
+export function extractRelative(text: string): { token: Token & { type: "RELATIVE" }; rest: string } | null {
   const match = text.match(RELATIVE_REGEX);
   if (!match) return null;
 
@@ -105,7 +105,7 @@ function extractRelative(text: string): { token: Token & { type: "RELATIVE" }; r
 
 const IN_DAY_REGEX = /\b(?:во?\s+)?([а-яё]+(?:день)?)\b/g;
 
-function extractDate(text: string): { token: Token & { type: "DATE" }; rest: string } | null {
+export function extractDate(text: string): { token: Token & { type: "DATE" }; rest: string } | null {
   // Try each word (and "в/во + word" combos)
   const words = text.split(/\s+/);
   for (let i = 0; i < words.length; i++) {
@@ -134,7 +134,7 @@ function extractDate(text: string): { token: Token & { type: "DATE" }; rest: str
 
 const CALENDAR_DATE_REGEX = /(?<!\d)(\d{1,2})(?:-?го)?\s+([а-яё]+)/;
 
-function extractCalendarDate(text: string): { token: Token & { type: "CALENDAR_DATE" }; rest: string } | null {
+export function extractCalendarDate(text: string): { token: Token & { type: "CALENDAR_DATE" }; rest: string } | null {
   const match = text.match(CALENDAR_DATE_REGEX);
   if (!match) return null;
 
@@ -164,7 +164,7 @@ function extractCalendarDate(text: string): { token: Token & { type: "CALENDAR_D
 const HH_MM_REGEX = /(?<!\p{L})в\s+(\d{1,2}):(\d{2})/u;
 const H_ONLY_REGEX = /(?<!\p{L})в\s+(\d{1,2})(?![\d:])/u;
 
-function extractTime(text: string): { token: Token & { type: "TIME" }; rest: string; ambiguous?: boolean } | null {
+export function extractTime(text: string): { token: Token & { type: "TIME" }; rest: string; ambiguous?: boolean } | null {
   // 1. Full "в HH:MM"
   let match = text.match(HH_MM_REGEX);
   if (match) {

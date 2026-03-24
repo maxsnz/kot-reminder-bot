@@ -26,6 +26,10 @@ export function createSnoozeKeyboard(scheduleId: string): InlineKeyboardMarkup {
           callback_data: `snooze:${scheduleId}:240`,
         },
         {
+          text: "...",
+          callback_data: `snooze_custom:${scheduleId}`,
+        },
+        {
           text: "✅",
           callback_data: `dismiss:${scheduleId}`,
         },

@@ -26,7 +26,8 @@ Telegram bot for scheduling reminders using AI. Processes natural language messa
 ### Additional Features
 
 - Regular text messages are processed as requests to create reminders (via AI)
-- Snooze callback buttons in reminder messages are handled automatically
+- Simple reminder requests (e.g. "через 30 минут пицца", "завтра в 10 позвонить") are parsed locally without AI and shown as a confirmation card
+- Snooze callback buttons in reminder messages allow snoozing by preset intervals or a custom duration ("..." button → free-text input)
 
 ## Setup
 
