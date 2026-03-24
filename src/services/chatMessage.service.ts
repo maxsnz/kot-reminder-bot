@@ -2,6 +2,7 @@ import {
   PrismaClient,
   ChatMessage,
   MessageRole,
+  MessageType,
 } from "@/prisma/generated/client";
 
 export class ChatMessageService {
@@ -14,6 +15,7 @@ export class ChatMessageService {
     telegramMessageId?: string | null;
     telegramReplyToId?: string | null;
     role: MessageRole;
+    messageType?: MessageType | null;
     text: string;
     aiAction?: any;
     scheduleId?: string | null;
@@ -26,6 +28,7 @@ export class ChatMessageService {
         telegramMessageId: params.telegramMessageId ?? null,
         telegramReplyToId: params.telegramReplyToId ?? null,
         role: params.role,
+        messageType: params.messageType ?? null,
         text: params.text,
         aiAction: params.aiAction ?? null,
         scheduleId: params.scheduleId ?? null,

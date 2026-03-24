@@ -1027,6 +1027,7 @@ export const ChatMessageScalarFieldEnum = {
   telegramMessageId: 'telegramMessageId',
   telegramReplyToId: 'telegramReplyToId',
   role: 'role',
+  messageType: 'messageType',
   text: 'text',
   aiAction: 'aiAction',
   scheduleId: 'scheduleId',
@@ -1218,6 +1219,20 @@ export type EnumMessageRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'MessageRole[]'
  */
 export type ListEnumMessageRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'MessageType'
+ */
+export type EnumMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageType'>
+    
+
+
+/**
+ * Reference to a field of type 'MessageType[]'
+ */
+export type ListEnumMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageType[]'>
     
 
 

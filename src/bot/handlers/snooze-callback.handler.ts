@@ -5,10 +5,9 @@ import { UserService } from "@/services/user.service";
 import { MessageService } from "@/services/message.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { FocusService } from "@/services/focus.service";
-import { MessageRole } from "@/prisma/generated/client";
+import { MessageRole, MessageType } from "@/prisma/generated/client";
 import { formatSnoozeConfirmation } from "@/utils/formatScheduleConfirmation";
 import { logger } from "@/utils/logger";
-import { CustomSnoozeStateStore } from "@/bot/state/customSnoozeState";
 
 export interface SnoozeCallbackHandlerDependencies {
   scheduleSnoozeService: ScheduleSnoozeService;
@@ -17,7 +16,6 @@ export interface SnoozeCallbackHandlerDependencies {
   messageService: MessageService;
   chatMessageService: ChatMessageService;
   focusService: FocusService;
-  customSnoozeState: CustomSnoozeStateStore;
 }
 
 export class SnoozeCallbackHandler {
@@ -38,25 +36,6 @@ export class SnoozeCallbackHandler {
     if (!chatId) {
       logger.error({ callbackData }, "Chat ID not found in callback query");
       await ctx.answerCbQuery("Ошибка: не удалось определить чат");
-      return;
-    }
-
-    // Handle custom snooze cancel callback
-    if (callbackData.startsWith("snooze_custom_cancel:")) {
-      const cancelMatch = callbackData.match(/^snooze_custom_cancel:(.+)$/);
-      if (cancelMatch) {
-        const user = await this.deps.userService.findByChatId(chatId);
-        if (user) {
-          const pending = this.deps.customSnoozeState.get(user.id);
-          this.deps.customSnoozeState.delete(user.id);
-          if (pending && messageId) {
-            await this.deps.messageService.removeInlineKeyboard(chatId, pending.promptMessageId);
-          }
-        }
-        await ctx.answerCbQuery();
-      } else {
-        await ctx.answerCbQuery("Ошибка");
-      }
       return;
     }
 
@@ -82,20 +61,20 @@ export class SnoozeCallbackHandler {
         if (messageId) {
           await this.deps.messageService.removeInlineKeyboard(chatId, messageId);
         }
-        const prompt = await this.deps.messageService.sendMessageWithInlineKeyboard(
+        const prompt = await this.deps.messageService.sendMessage(
           chatId,
           "Через сколько напомнить?",
-          {
-            inline_keyboard: [[
-              { text: "Отмена", callback_data: `snooze_custom_cancel:${scheduleId}` },
-            ]],
-          }
+          { reply_markup: { force_reply: true, selective: true } }
         );
         if (prompt) {
-          this.deps.customSnoozeState.set(user.id, {
+          await this.deps.chatMessageService.createMessage({
+            userId: user.id,
+            telegramChatId: chatId.toString(),
+            telegramMessageId: prompt.message_id.toString(),
+            role: MessageRole.system,
+            messageType: MessageType.snooze_prompt,
+            text: "Через сколько напомнить?",
             scheduleId,
-            promptMessageId: prompt.message_id,
-            chatId,
           });
         }
         await ctx.answerCbQuery();

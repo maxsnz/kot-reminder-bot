@@ -120,6 +120,10 @@ enum MessageRole {
   system
 }
 
+enum MessageType {
+  snooze_prompt
+}
+
 model ChatMessage {
   id        String      @id @default(uuid())
   user      User        @relation(fields: [userId], references: [id])
@@ -129,8 +133,9 @@ model ChatMessage {
   telegramMessageId String?
   telegramReplyToId String?
 
-  role      MessageRole
-  text      String
+  role        MessageRole
+  messageType MessageType?
+  text        String
 
   aiAction  Json?
 
@@ -144,6 +149,7 @@ model ChatMessage {
 
   @@index([userId, createdAt])
   @@index([scheduleId])
+  @@index([telegramMessageId, telegramChatId])
 }
 
 model Focus {

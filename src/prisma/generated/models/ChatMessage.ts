@@ -31,6 +31,7 @@ export type ChatMessageMinAggregateOutputType = {
   telegramMessageId: string | null
   telegramReplyToId: string | null
   role: $Enums.MessageRole | null
+  messageType: $Enums.MessageType | null
   text: string | null
   scheduleId: string | null
   createdAt: Date | null
@@ -44,6 +45,7 @@ export type ChatMessageMaxAggregateOutputType = {
   telegramMessageId: string | null
   telegramReplyToId: string | null
   role: $Enums.MessageRole | null
+  messageType: $Enums.MessageType | null
   text: string | null
   scheduleId: string | null
   createdAt: Date | null
@@ -57,6 +59,7 @@ export type ChatMessageCountAggregateOutputType = {
   telegramMessageId: number
   telegramReplyToId: number
   role: number
+  messageType: number
   text: number
   aiAction: number
   scheduleId: number
@@ -73,6 +76,7 @@ export type ChatMessageMinAggregateInputType = {
   telegramMessageId?: true
   telegramReplyToId?: true
   role?: true
+  messageType?: true
   text?: true
   scheduleId?: true
   createdAt?: true
@@ -86,6 +90,7 @@ export type ChatMessageMaxAggregateInputType = {
   telegramMessageId?: true
   telegramReplyToId?: true
   role?: true
+  messageType?: true
   text?: true
   scheduleId?: true
   createdAt?: true
@@ -99,6 +104,7 @@ export type ChatMessageCountAggregateInputType = {
   telegramMessageId?: true
   telegramReplyToId?: true
   role?: true
+  messageType?: true
   text?: true
   aiAction?: true
   scheduleId?: true
@@ -186,6 +192,7 @@ export type ChatMessageGroupByOutputType = {
   telegramMessageId: string | null
   telegramReplyToId: string | null
   role: $Enums.MessageRole
+  messageType: $Enums.MessageType | null
   text: string
   aiAction: runtime.JsonValue | null
   scheduleId: string | null
@@ -221,6 +228,7 @@ export type ChatMessageWhereInput = {
   telegramMessageId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
   telegramReplyToId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
   role?: Prisma.EnumMessageRoleFilter<"ChatMessage"> | $Enums.MessageRole
+  messageType?: Prisma.EnumMessageTypeNullableFilter<"ChatMessage"> | $Enums.MessageType | null
   text?: Prisma.StringFilter<"ChatMessage"> | string
   aiAction?: Prisma.JsonNullableFilter<"ChatMessage">
   scheduleId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
@@ -238,6 +246,7 @@ export type ChatMessageOrderByWithRelationInput = {
   telegramMessageId?: Prisma.SortOrderInput | Prisma.SortOrder
   telegramReplyToId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
+  messageType?: Prisma.SortOrderInput | Prisma.SortOrder
   text?: Prisma.SortOrder
   aiAction?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -258,6 +267,7 @@ export type ChatMessageWhereUniqueInput = Prisma.AtLeast<{
   telegramMessageId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
   telegramReplyToId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
   role?: Prisma.EnumMessageRoleFilter<"ChatMessage"> | $Enums.MessageRole
+  messageType?: Prisma.EnumMessageTypeNullableFilter<"ChatMessage"> | $Enums.MessageType | null
   text?: Prisma.StringFilter<"ChatMessage"> | string
   aiAction?: Prisma.JsonNullableFilter<"ChatMessage">
   scheduleId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
@@ -275,6 +285,7 @@ export type ChatMessageOrderByWithAggregationInput = {
   telegramMessageId?: Prisma.SortOrderInput | Prisma.SortOrder
   telegramReplyToId?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
+  messageType?: Prisma.SortOrderInput | Prisma.SortOrder
   text?: Prisma.SortOrder
   aiAction?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -295,6 +306,7 @@ export type ChatMessageScalarWhereWithAggregatesInput = {
   telegramMessageId?: Prisma.StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
   telegramReplyToId?: Prisma.StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
   role?: Prisma.EnumMessageRoleWithAggregatesFilter<"ChatMessage"> | $Enums.MessageRole
+  messageType?: Prisma.EnumMessageTypeNullableWithAggregatesFilter<"ChatMessage"> | $Enums.MessageType | null
   text?: Prisma.StringWithAggregatesFilter<"ChatMessage"> | string
   aiAction?: Prisma.JsonNullableWithAggregatesFilter<"ChatMessage">
   scheduleId?: Prisma.StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
@@ -308,6 +320,7 @@ export type ChatMessageCreateInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -323,6 +336,7 @@ export type ChatMessageUncheckedCreateInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: string | null
@@ -336,6 +350,7 @@ export type ChatMessageUpdateInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -351,6 +366,7 @@ export type ChatMessageUncheckedUpdateInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -365,6 +381,7 @@ export type ChatMessageCreateManyInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: string | null
@@ -378,6 +395,7 @@ export type ChatMessageUpdateManyMutationInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -390,6 +408,7 @@ export type ChatMessageUncheckedUpdateManyInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -414,6 +433,7 @@ export type ChatMessageCountOrderByAggregateInput = {
   telegramMessageId?: Prisma.SortOrder
   telegramReplyToId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  messageType?: Prisma.SortOrder
   text?: Prisma.SortOrder
   aiAction?: Prisma.SortOrder
   scheduleId?: Prisma.SortOrder
@@ -428,6 +448,7 @@ export type ChatMessageMaxOrderByAggregateInput = {
   telegramMessageId?: Prisma.SortOrder
   telegramReplyToId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  messageType?: Prisma.SortOrder
   text?: Prisma.SortOrder
   scheduleId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -441,6 +462,7 @@ export type ChatMessageMinOrderByAggregateInput = {
   telegramMessageId?: Prisma.SortOrder
   telegramReplyToId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  messageType?: Prisma.SortOrder
   text?: Prisma.SortOrder
   scheduleId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -535,6 +557,10 @@ export type EnumMessageRoleFieldUpdateOperationsInput = {
   set?: $Enums.MessageRole
 }
 
+export type NullableEnumMessageTypeFieldUpdateOperationsInput = {
+  set?: $Enums.MessageType | null
+}
+
 export type ChatMessageCreateNestedManyWithoutFocusInput = {
   create?: Prisma.XOR<Prisma.ChatMessageCreateWithoutFocusInput, Prisma.ChatMessageUncheckedCreateWithoutFocusInput> | Prisma.ChatMessageCreateWithoutFocusInput[] | Prisma.ChatMessageUncheckedCreateWithoutFocusInput[]
   connectOrCreate?: Prisma.ChatMessageCreateOrConnectWithoutFocusInput | Prisma.ChatMessageCreateOrConnectWithoutFocusInput[]
@@ -583,6 +609,7 @@ export type ChatMessageCreateWithoutUserInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -596,6 +623,7 @@ export type ChatMessageUncheckedCreateWithoutUserInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: string | null
@@ -639,6 +667,7 @@ export type ChatMessageScalarWhereInput = {
   telegramMessageId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
   telegramReplyToId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
   role?: Prisma.EnumMessageRoleFilter<"ChatMessage"> | $Enums.MessageRole
+  messageType?: Prisma.EnumMessageTypeNullableFilter<"ChatMessage"> | $Enums.MessageType | null
   text?: Prisma.StringFilter<"ChatMessage"> | string
   aiAction?: Prisma.JsonNullableFilter<"ChatMessage">
   scheduleId?: Prisma.StringNullableFilter<"ChatMessage"> | string | null
@@ -652,6 +681,7 @@ export type ChatMessageCreateWithoutScheduleInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -666,6 +696,7 @@ export type ChatMessageUncheckedCreateWithoutScheduleInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -704,6 +735,7 @@ export type ChatMessageCreateWithoutFocusInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -718,6 +750,7 @@ export type ChatMessageUncheckedCreateWithoutFocusInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: string | null
@@ -756,6 +789,7 @@ export type ChatMessageCreateManyUserInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: string | null
@@ -769,6 +803,7 @@ export type ChatMessageUpdateWithoutUserInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -782,6 +817,7 @@ export type ChatMessageUncheckedUpdateWithoutUserInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -795,6 +831,7 @@ export type ChatMessageUncheckedUpdateManyWithoutUserInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -809,6 +846,7 @@ export type ChatMessageCreateManyScheduleInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
@@ -821,6 +859,7 @@ export type ChatMessageUpdateWithoutScheduleInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -835,6 +874,7 @@ export type ChatMessageUncheckedUpdateWithoutScheduleInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -848,6 +888,7 @@ export type ChatMessageUncheckedUpdateManyWithoutScheduleInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -861,6 +902,7 @@ export type ChatMessageCreateManyFocusInput = {
   telegramMessageId?: string | null
   telegramReplyToId?: string | null
   role: $Enums.MessageRole
+  messageType?: $Enums.MessageType | null
   text: string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: string | null
@@ -873,6 +915,7 @@ export type ChatMessageUpdateWithoutFocusInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -887,6 +930,7 @@ export type ChatMessageUncheckedUpdateWithoutFocusInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -900,6 +944,7 @@ export type ChatMessageUncheckedUpdateManyWithoutFocusInput = {
   telegramMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   telegramReplyToId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumMessageRoleFieldUpdateOperationsInput | $Enums.MessageRole
+  messageType?: Prisma.NullableEnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType | null
   text?: Prisma.StringFieldUpdateOperationsInput | string
   aiAction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -915,6 +960,7 @@ export type ChatMessageSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   telegramMessageId?: boolean
   telegramReplyToId?: boolean
   role?: boolean
+  messageType?: boolean
   text?: boolean
   aiAction?: boolean
   scheduleId?: boolean
@@ -932,6 +978,7 @@ export type ChatMessageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   telegramMessageId?: boolean
   telegramReplyToId?: boolean
   role?: boolean
+  messageType?: boolean
   text?: boolean
   aiAction?: boolean
   scheduleId?: boolean
@@ -949,6 +996,7 @@ export type ChatMessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   telegramMessageId?: boolean
   telegramReplyToId?: boolean
   role?: boolean
+  messageType?: boolean
   text?: boolean
   aiAction?: boolean
   scheduleId?: boolean
@@ -966,6 +1014,7 @@ export type ChatMessageSelectScalar = {
   telegramMessageId?: boolean
   telegramReplyToId?: boolean
   role?: boolean
+  messageType?: boolean
   text?: boolean
   aiAction?: boolean
   scheduleId?: boolean
@@ -973,7 +1022,7 @@ export type ChatMessageSelectScalar = {
   focusId?: boolean
 }
 
-export type ChatMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "telegramChatId" | "telegramMessageId" | "telegramReplyToId" | "role" | "text" | "aiAction" | "scheduleId" | "createdAt" | "focusId", ExtArgs["result"]["chatMessage"]>
+export type ChatMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "telegramChatId" | "telegramMessageId" | "telegramReplyToId" | "role" | "messageType" | "text" | "aiAction" | "scheduleId" | "createdAt" | "focusId", ExtArgs["result"]["chatMessage"]>
 export type ChatMessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.ChatMessage$scheduleArgs<ExtArgs>
@@ -1004,6 +1053,7 @@ export type $ChatMessagePayload<ExtArgs extends runtime.Types.Extensions.Interna
     telegramMessageId: string | null
     telegramReplyToId: string | null
     role: $Enums.MessageRole
+    messageType: $Enums.MessageType | null
     text: string
     aiAction: runtime.JsonValue | null
     scheduleId: string | null
@@ -1441,6 +1491,7 @@ export interface ChatMessageFieldRefs {
   readonly telegramMessageId: Prisma.FieldRef<"ChatMessage", 'String'>
   readonly telegramReplyToId: Prisma.FieldRef<"ChatMessage", 'String'>
   readonly role: Prisma.FieldRef<"ChatMessage", 'MessageRole'>
+  readonly messageType: Prisma.FieldRef<"ChatMessage", 'MessageType'>
   readonly text: Prisma.FieldRef<"ChatMessage", 'String'>
   readonly aiAction: Prisma.FieldRef<"ChatMessage", 'Json'>
   readonly scheduleId: Prisma.FieldRef<"ChatMessage", 'String'>

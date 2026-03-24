@@ -195,6 +195,13 @@ export type EnumMessageRoleFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumMessageRoleFilter<$PrismaModel> | $Enums.MessageRole
 }
 
+export type EnumMessageTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessageType | Prisma.EnumMessageTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMessageTypeNullableFilter<$PrismaModel> | $Enums.MessageType | null
+}
+
 export type JsonNullableFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -227,6 +234,16 @@ export type EnumMessageRoleWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumMessageRoleFilter<$PrismaModel>
   _max?: Prisma.NestedEnumMessageRoleFilter<$PrismaModel>
+}
+
+export type EnumMessageTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessageType | Prisma.EnumMessageTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMessageTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.MessageType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMessageTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMessageTypeNullableFilter<$PrismaModel>
 }
 
 export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
@@ -546,6 +563,13 @@ export type NestedEnumMessageRoleFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumMessageRoleFilter<$PrismaModel> | $Enums.MessageRole
 }
 
+export type NestedEnumMessageTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessageType | Prisma.EnumMessageTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMessageTypeNullableFilter<$PrismaModel> | $Enums.MessageType | null
+}
+
 export type NestedEnumMessageRoleWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.MessageRole | Prisma.EnumMessageRoleFieldRefInput<$PrismaModel>
   in?: $Enums.MessageRole[] | Prisma.ListEnumMessageRoleFieldRefInput<$PrismaModel>
@@ -554,6 +578,16 @@ export type NestedEnumMessageRoleWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumMessageRoleFilter<$PrismaModel>
   _max?: Prisma.NestedEnumMessageRoleFilter<$PrismaModel>
+}
+
+export type NestedEnumMessageTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessageType | Prisma.EnumMessageTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.MessageType[] | Prisma.ListEnumMessageTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumMessageTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.MessageType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMessageTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMessageTypeNullableFilter<$PrismaModel>
 }
 
 export type NestedJsonNullableFilter<$PrismaModel = never> =

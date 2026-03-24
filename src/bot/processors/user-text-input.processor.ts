@@ -1,4 +1,4 @@
-import { User } from "@/prisma/generated/client";
+import { User, MessageRole, MessageType } from "@/prisma/generated/client";
 import { FocusService } from "@/services/focus.service";
 import { ChatMessageService } from "@/services/chatMessage.service";
 import { ScheduleService } from "@/services/schedule.service";
@@ -6,13 +6,11 @@ import { ScheduleSnoozeService } from "@/services/scheduleSnooze.service";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
 import { MessageService } from "@/services/message.service";
-import { CustomSnoozeStateStore } from "@/bot/state/customSnoozeState";
 import { getUserSchedulePrompt } from "@/bot/prompt";
 import { getUserTime } from "@/utils/getUserTime";
 import { tryParseMessage } from "@/bot/parser/index";
 import { parseSnoozeInput } from "@/bot/parser/parseSnoozeInput";
 import { formatSnoozeConfirmation } from "@/utils/formatScheduleConfirmation";
-import { MessageRole } from "@/prisma/generated/client";
 import { logger } from "@/utils/logger";
 
 export interface UserTextInputProcessorDeps {
@@ -23,7 +21,6 @@ export interface UserTextInputProcessorDeps {
   aiRequestService: AiRequestService;
   graphileWorkerService: GraphileWorkerService;
   messageService: MessageService;
-  customSnoozeState: CustomSnoozeStateStore;
 }
 
 export class UserTextInputProcessor {
@@ -33,53 +30,59 @@ export class UserTextInputProcessor {
     user: User,
     chatId: number,
     text: string,
-    telegramMessageId: string
+    telegramMessageId: string,
+    replyToMessageId?: string
   ): Promise<void> {
-    // Handle pending custom snooze
-    const pendingSnooze = this.deps.customSnoozeState.get(user.id);
-    if (pendingSnooze) {
-      if (!user.timezone) {
-        await this.deps.messageService.sendMessage(chatId, "Ошибка: не установлен часовой пояс");
-        return;
-      }
-      const result = parseSnoozeInput(text, user.timezone, new Date());
-      if (result.ok) {
-        const schedule = await this.deps.scheduleService.findById(pendingSnooze.scheduleId);
-        if (!schedule) {
-          this.deps.customSnoozeState.delete(user.id);
-          await this.deps.messageService.sendMessage(chatId, "Ошибка: напоминание не найдено");
+    // Handle custom snooze reply
+    if (replyToMessageId) {
+      const snoozePrompt = await this.deps.chatMessageService.findByTelegramMessageId(
+        replyToMessageId,
+        chatId.toString()
+      );
+      if (snoozePrompt?.messageType === MessageType.snooze_prompt && snoozePrompt.scheduleId) {
+        if (!user.timezone) {
+          await this.deps.messageService.sendMessage(chatId, "Ошибка: не установлен часовой пояс");
           return;
         }
-        await this.deps.scheduleSnoozeService.createSnooze({
-          scheduleId: pendingSnooze.scheduleId,
-          userId: user.id,
-          message: schedule.message,
-          runAt: result.runAt,
-        });
-        await this.deps.messageService.removeInlineKeyboard(pendingSnooze.chatId, pendingSnooze.promptMessageId);
-        this.deps.customSnoozeState.delete(user.id);
-        const confirmationText = formatSnoozeConfirmation(result.runAt, schedule.message, user.timezone);
-        await this.deps.messageService.sendMessage(chatId, confirmationText);
-      } else if (result.reason === "time_in_past") {
-        await this.deps.messageService.sendMessageWithInlineKeyboard(
-          chatId,
-          "Это время уже прошло, попробуйте ещё раз",
-          { inline_keyboard: [[{ text: "Отмена", callback_data: `snooze_custom_cancel:${pendingSnooze.scheduleId}` }]] }
-        );
-      } else if (result.reason === "ambiguous_time") {
-        await this.deps.messageService.sendMessageWithInlineKeyboard(
-          chatId,
-          "Уточните время: утро или вечер?",
-          { inline_keyboard: [[{ text: "Отмена", callback_data: `snooze_custom_cancel:${pendingSnooze.scheduleId}` }]] }
-        );
-      } else {
-        await this.deps.messageService.sendMessageWithInlineKeyboard(
-          chatId,
-          "Не понял, уточните: например, через 2 часа или завтра в 10 утра",
-          { inline_keyboard: [[{ text: "Отмена", callback_data: `snooze_custom_cancel:${pendingSnooze.scheduleId}` }]] }
-        );
+        const result = parseSnoozeInput(text, user.timezone, new Date());
+        if (result.ok) {
+          const schedule = await this.deps.scheduleService.findById(snoozePrompt.scheduleId);
+          if (!schedule) {
+            await this.deps.messageService.sendMessage(chatId, "Ошибка: напоминание не найдено");
+            return;
+          }
+          await this.deps.scheduleSnoozeService.createSnooze({
+            scheduleId: snoozePrompt.scheduleId,
+            userId: user.id,
+            message: schedule.message,
+            runAt: result.runAt,
+          });
+          const confirmationText = formatSnoozeConfirmation(result.runAt, schedule.message, user.timezone);
+          await this.deps.messageService.sendMessage(chatId, confirmationText);
+        } else {
+          const errorText =
+            result.reason === "time_in_past"
+              ? "Это время уже прошло, попробуйте ещё раз"
+              : result.reason === "ambiguous_time"
+                ? "Уточните время: утро или вечер?"
+                : "Не понял, уточните: например, через 2 часа или завтра в 10 утра";
+          const newPrompt = await this.deps.messageService.sendMessage(chatId, errorText, {
+            reply_markup: { force_reply: true, selective: true },
+          });
+          if (newPrompt) {
+            await this.deps.chatMessageService.createMessage({
+              userId: user.id,
+              telegramChatId: chatId.toString(),
+              telegramMessageId: newPrompt.message_id.toString(),
+              role: MessageRole.system,
+              messageType: MessageType.snooze_prompt,
+              text: errorText,
+              scheduleId: snoozePrompt.scheduleId,
+            });
+          }
+        }
+        return;
       }
-      return;
     }
 
     const focus = await this.deps.focusService.findByUserId(user.id);

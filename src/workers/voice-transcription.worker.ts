@@ -12,6 +12,7 @@ interface VoiceTranscriptionJobData {
   chatId: number;
   fileId: string;
   telegramMessageId: string;
+  replyToMessageId?: string;
 }
 
 export function createVoiceTranscriptionTask(
@@ -23,7 +24,7 @@ export function createVoiceTranscriptionTask(
   telegramToken: string
 ): Task {
   return async (payload: unknown) => {
-    const { userId, chatId, fileId, telegramMessageId } =
+    const { userId, chatId, fileId, telegramMessageId, replyToMessageId } =
       payload as VoiceTranscriptionJobData;
 
     logger.info({ userId, chatId, fileId }, "Processing voice transcription");
@@ -48,7 +49,7 @@ export function createVoiceTranscriptionTask(
       const user = await userService.findById(userId);
       if (!user) throw new Error(`User ${userId} not found`);
 
-      await userTextInputProcessor.process(user, chatId, transcription, telegramMessageId);
+      await userTextInputProcessor.process(user, chatId, transcription, telegramMessageId, replyToMessageId);
     } catch (error) {
       logger.error(
         { err: error instanceof Error ? error : new Error(String(error)), userId, chatId },

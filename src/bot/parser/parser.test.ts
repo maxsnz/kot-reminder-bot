@@ -209,6 +209,33 @@ describe("tryParseMessage", () => {
       });
     });
 
+    test("через минутку - погладить пимпу (уменьшительная форма, нет числа)", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("через минутку - погладить пимпу", TZ);
+        const s = oneTime(r);
+        expect(s.runAtTimes[0]).toBe("10:01");
+        expect(s.message).toBe("погладить пимпу");
+      });
+    });
+
+    test("через пару минуток - погладить пимпу (пару = 2)", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("через пару минуток - погладить пимпу", TZ);
+        const s = oneTime(r);
+        expect(s.runAtTimes[0]).toBe("10:02");
+        expect(s.message).toBe("погладить пимпу");
+      });
+    });
+
+    test("через три минутки - погладить пимпу (уменьшительная форма с числом)", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("через три минутки - погладить пимпу", TZ);
+        const s = oneTime(r);
+        expect(s.runAtTimes[0]).toBe("10:03");
+        expect(s.message).toBe("погладить пимпу");
+      });
+    });
+
     test("без текста → no_text", () => {
       const r = tryParseMessage("через 30 минут", TZ);
       expect(r.ok).toBe(false);

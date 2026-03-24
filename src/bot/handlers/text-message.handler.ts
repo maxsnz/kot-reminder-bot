@@ -30,11 +30,13 @@ export class TextMessageHandler {
         return;
       }
 
+      const replyToMessageId = ctx.message.reply_to_message?.message_id?.toString();
       await this.deps.userTextInputProcessor.process(
         user,
         chatId,
         messageText,
-        ctx.message.message_id.toString()
+        ctx.message.message_id.toString(),
+        replyToMessageId
       );
     } catch (e) {
       logger.error(

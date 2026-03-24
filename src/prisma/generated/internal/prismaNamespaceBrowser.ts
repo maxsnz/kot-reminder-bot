@@ -136,6 +136,7 @@ export const ChatMessageScalarFieldEnum = {
   telegramMessageId: 'telegramMessageId',
   telegramReplyToId: 'telegramReplyToId',
   role: 'role',
+  messageType: 'messageType',
   text: 'text',
   aiAction: 'aiAction',
   scheduleId: 'scheduleId',

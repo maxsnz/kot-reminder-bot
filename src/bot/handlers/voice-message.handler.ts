@@ -32,11 +32,13 @@ export class VoiceMessageHandler {
 
       await this.deps.messageService.sendMessage(chatId, "🎤 Распознаю голосовое...");
 
+      const replyToMessageId = ctx.message.reply_to_message?.message_id?.toString();
       await this.deps.graphileWorkerService.addJob("voice-transcription", {
         userId: user.id,
         chatId,
         fileId,
         telegramMessageId,
+        replyToMessageId,
       });
     } catch (e) {
       logger.error(

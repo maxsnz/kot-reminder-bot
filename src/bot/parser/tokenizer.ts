@@ -35,7 +35,7 @@ export type Token =
 
 const NUMBER_WORDS: Record<string, number> = {
   один: 1, одну: 1, одна: 1,
-  два: 2, две: 2,
+  два: 2, две: 2, пару: 2,
   три: 3,
   четыре: 4,
   пять: 5,
@@ -67,37 +67,73 @@ export function normalize(text: string): string {
 // Matches: "через 30 минут", "через 2 часа", "через час"
 
 const RELATIVE_REGEX = /через\s+(\d+|[а-яё]+)\s+([а-яё]+)/;
+const RELATIVE_SIMPLE_REGEX = /через\s+([а-яё]+)/;
 
 export function extractRelative(text: string): { token: Token & { type: "RELATIVE" }; rest: string } | null {
   const match = text.match(RELATIVE_REGEX);
-  if (!match) return null;
+  if (match) {
+    const rawAmount = match[1];
+    const rawUnit = match[2];
 
-  const rawAmount = match[1];
-  const rawUnit = match[2];
+    let amount = parseInt(rawAmount, 10);
+    if (isNaN(amount)) {
+      const fromWord = parseNumberWord(rawAmount);
+      if (fromWord !== null) {
+        amount = fromWord;
+      } else {
+        // rawAmount might itself be a unit word (e.g. "через минуту ..."),
+        // fall through to simple match below
+        const unitFromAmount =
+          DURATION_UNIT_KEYWORDS[rawAmount] ??
+          (() => {
+            const closest = findClosest(rawAmount, DURATION_UNIT_DICTIONARY);
+            return closest ? DURATION_UNIT_KEYWORDS[closest] : null;
+          })();
+        if (!unitFromAmount) return null;
+        // rawAmount is a unit → amount=1, unit=rawAmount, rest keeps rawUnit onward
+        const minutes =
+          unitFromAmount === "minutes" ? 1 : unitFromAmount === "hours" ? 60 : 60 * 24;
+        const rest = text.replace(match[0], rawUnit).replace(/\s+/g, " ").trim();
+        return { token: { type: "RELATIVE", minutes }, rest };
+      }
+    }
 
-  let amount = parseInt(rawAmount, 10);
-  if (isNaN(amount)) {
-    const fromWord = parseNumberWord(rawAmount);
-    if (fromWord === null) return null;
-    amount = fromWord;
+    const unit =
+      DURATION_UNIT_KEYWORDS[rawUnit] ??
+      (() => {
+        const closest = findClosest(rawUnit, DURATION_UNIT_DICTIONARY);
+        return closest ? DURATION_UNIT_KEYWORDS[closest] : null;
+      })();
+
+    if (!unit) return null;
+
+    let minutes: number;
+    if (unit === "minutes") minutes = amount;
+    else if (unit === "hours") minutes = amount * 60;
+    else minutes = amount * 60 * 24;
+
+    const rest = text.replace(match[0], "").replace(/\s+/g, " ").trim();
+    return { token: { type: "RELATIVE", minutes }, rest };
   }
 
-  const unit =
-    DURATION_UNIT_KEYWORDS[rawUnit] ??
-    (() => {
-      const closest = findClosest(rawUnit, DURATION_UNIT_DICTIONARY);
-      return closest ? DURATION_UNIT_KEYWORDS[closest] : null;
-    })();
+  // "через минуту" / "через час" / "через день" — unit alone implies amount=1
+  const simpleMatch = text.match(RELATIVE_SIMPLE_REGEX);
+  if (simpleMatch) {
+    const rawUnit = simpleMatch[1];
+    const unit =
+      DURATION_UNIT_KEYWORDS[rawUnit] ??
+      (() => {
+        const closest = findClosest(rawUnit, DURATION_UNIT_DICTIONARY);
+        return closest ? DURATION_UNIT_KEYWORDS[closest] : null;
+      })();
+    if (!unit) return null;
 
-  if (!unit) return null;
+    const minutes = unit === "minutes" ? 1 : unit === "hours" ? 60 : 60 * 24;
+    const rest = text.replace(simpleMatch[0], "").replace(/\s+/g, " ").trim();
+    return { token: { type: "RELATIVE", minutes }, rest };
+  }
 
-  let minutes: number;
-  if (unit === "minutes") minutes = amount;
-  else if (unit === "hours") minutes = amount * 60;
-  else minutes = amount * 60 * 24;
-
-  const rest = text.replace(match[0], "").replace(/\s+/g, " ").trim();
-  return { token: { type: "RELATIVE", minutes }, rest };
+  return null;
 }
 
 // ── DATE token ────────────────────────────────────────────────────────────────

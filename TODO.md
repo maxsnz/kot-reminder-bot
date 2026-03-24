@@ -1,3 +1,2 @@
 - new simplified context flow
-- voice messages support
 - custom user instructions

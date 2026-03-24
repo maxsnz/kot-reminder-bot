@@ -45,6 +45,13 @@ export const MessageRole = {
 export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole]
 
 
+export const MessageType = {
+  snooze_prompt: 'snooze_prompt'
+} as const
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType]
+
+
 export const AiRequestStatus = {
   queued: 'queued',
   processing: 'processing',

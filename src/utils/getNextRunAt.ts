@@ -24,7 +24,7 @@ export function parseLocalDateTimeInTimezone(
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: false,
+    hourCycle: "h23",
   });
 
   // Start with an approximate UTC date
@@ -79,7 +79,7 @@ function getNowInTimezone(currentTime: Date, timezone: string): Date {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: false,
+    hourCycle: "h23",
   });
 
   const parts = formatter.formatToParts(currentTime);

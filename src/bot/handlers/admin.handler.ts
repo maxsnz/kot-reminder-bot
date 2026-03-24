@@ -8,6 +8,7 @@ import { AiRequestService } from "@/services/aiRequest.service";
 import { SettingService } from "@/services/setting.service";
 import { ScheduleService } from "@/services/schedule.service";
 import { logger } from "@/utils/logger";
+import { generateObjectsTable } from "@/utils/generateTable";
 import { readFileSync } from "fs";
 import { join } from "path";
 
