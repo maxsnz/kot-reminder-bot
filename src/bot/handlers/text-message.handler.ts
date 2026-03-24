@@ -68,7 +68,7 @@ export class TextMessageHandler {
             userId: user.id,
             telegramChatId: chatId.toString(),
             telegramMessageId: sentMessage?.message_id.toString() ?? null,
-            role: MessageRole.assistant,
+            role: MessageRole.system,
             text: replyText,
             focusId: focus.id,
           });
