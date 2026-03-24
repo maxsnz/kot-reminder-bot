@@ -10,6 +10,7 @@ import { ScheduleService } from "@/services/schedule.service";
 import { logger } from "@/utils/logger";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
+import { tryParseMessage } from "@/bot/parser/index";
 
 export interface TextMessageHandlerDependencies {
   userService: UserService;
@@ -50,10 +51,48 @@ export class TextMessageHandler {
       const userMessage = await this.deps.chatMessageService.createMessage({
         userId: user.id,
         telegramChatId: chatId.toString(),
+        telegramMessageId: ctx.message.message_id.toString(),
         role: MessageRole.user,
         text: messageText,
         focusId: focus.id,
       });
+
+      // Try parser first (skip if no timezone)
+      if (user.timezone) {
+        const parsed = tryParseMessage(messageText, user.timezone);
+
+        if (!parsed.ok && parsed.reason === "no_text") {
+          const replyText = "Уточните запрос";
+          const sentMessage = await this.deps.messageService.sendMessage(chatId, replyText);
+          await this.deps.chatMessageService.createMessage({
+            userId: user.id,
+            telegramChatId: chatId.toString(),
+            telegramMessageId: sentMessage?.message_id.toString() ?? null,
+            role: MessageRole.system,
+            text: replyText,
+            focusId: focus.id,
+          });
+          return;
+        }
+
+        if (parsed.ok) {
+          const { schedule } = parsed.result;
+          const confirmText = `${schedule.emoji} ${schedule.summary}\n\nПодтвердить?`;
+          const msgId = ctx.message.message_id.toString();
+          await this.deps.messageService.sendMessageWithInlineKeyboard(
+            chatId,
+            confirmText,
+            {
+              inline_keyboard: [[
+                { text: "❌", callback_data: `parser:cancel:${msgId}` },
+                { text: "🤖", callback_data: `parser:ai:${msgId}` },
+                { text: "✅", callback_data: `parser:confirm:${msgId}` },
+              ]],
+            }
+          );
+          return;
+        }
+      }
 
       // Prepare data for AI request
       const schedules = await this.deps.scheduleService.findActiveByUserId(

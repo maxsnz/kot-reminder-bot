@@ -79,23 +79,18 @@ export function createScheduleReminderTask(
 
       const focus = await focusService.findByScheduleId(schedule.id);
 
-      if (focus) {
-        await chatMessageService.createMessage({
-          userId: user.id,
-          telegramChatId: user.chatId.toString(),
-          telegramMessageId: telegramMessageId?.toString() ?? null,
-          role: MessageRole.system,
-          text: schedule.message,
-          scheduleId: schedule.id,
-          focusId: focus.id,
-        });
+      await chatMessageService.createMessage({
+        userId: user.id,
+        telegramChatId: user.chatId.toString(),
+        telegramMessageId: telegramMessageId?.toString() ?? null,
+        role: MessageRole.system,
+        text: schedule.message,
+        scheduleId: schedule.id,
+        focusId: focus?.id ?? null,
+      });
 
+      if (focus) {
         await userService.setFocus(user.id, focus.id);
-      } else {
-        logger.warn(
-          { scheduleId: schedule.id },
-          "No focus found for schedule, skipping ChatMessage creation"
-        );
       }
 
       const currentTime = new Date();
@@ -113,7 +108,7 @@ export function createScheduleReminderTask(
         );
       } else {
         await scheduleService.endSchedule(schedule.id);
-        logger.info(
+        logger.debug(
           { scheduleId: schedule.id },
           "Schedule ended (no more runs)"
         );

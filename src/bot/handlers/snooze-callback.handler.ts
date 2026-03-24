@@ -53,10 +53,6 @@ export class SnoozeCallbackHandler {
               // Remove inline keyboard buttons
               await this.deps.messageService.removeInlineKeyboard(chatId, messageId);
               await ctx.answerCbQuery();
-              logger.info(
-                { userId: user.id, scheduleId },
-                "Dismissed reminder buttons"
-              );
               return;
             }
           }

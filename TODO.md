@@ -1,3 +1,4 @@
+- new simplified context flow
 - custom snooze time
 - try to parse user messages by code first, then by AI
 - voice messages support

@@ -57,6 +57,16 @@ export class ChatMessageService {
     });
   }
 
+  // Get message by Telegram message ID and chat ID
+  async findByTelegramMessageId(
+    telegramMessageId: string,
+    telegramChatId: string
+  ): Promise<ChatMessage | null> {
+    return this.prisma.chatMessage.findFirst({
+      where: { telegramMessageId, telegramChatId },
+    });
+  }
+
   // Get messages by user ID
   async getMessagesByUserId(userId: string): Promise<ChatMessage[]> {
     return this.prisma.chatMessage.findMany({
