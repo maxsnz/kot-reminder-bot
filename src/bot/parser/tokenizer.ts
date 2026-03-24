@@ -132,7 +132,7 @@ function extractDate(text: string): { token: Token & { type: "DATE" }; rest: str
 // ── CALENDAR_DATE token ───────────────────────────────────────────────────────
 // Matches: "23 июня", "5 марта", "1-го января"
 
-const CALENDAR_DATE_REGEX = /(?<!\d)(\d{1,2})(?:-го)?\s+([а-яё]+)/;
+const CALENDAR_DATE_REGEX = /(?<!\d)(\d{1,2})(?:-?го)?\s+([а-яё]+)/;
 
 function extractCalendarDate(text: string): { token: Token & { type: "CALENDAR_DATE" }; rest: string } | null {
   const match = text.match(CALENDAR_DATE_REGEX);

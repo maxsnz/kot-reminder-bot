@@ -101,6 +101,9 @@ export const MONTH_KEYWORDS: Record<string, number> = {
   // nominative
   январь: 1, февраль: 2, март: 3, апрель: 4, май: 5, июнь: 6,
   июль: 7, август: 8, сентябрь: 9, октябрь: 10, ноябрь: 11, декабрь: 12,
+  // abbreviations
+  янв: 1, фев: 2, февр: 2, мар: 3, апр: 4,
+  июн: 6, июл: 7, авг: 8, сен: 9, сент: 9, окт: 10, ноя: 11, нояб: 11, дек: 12,
 };
 
 export const MONTH_DICTIONARY = Object.keys(MONTH_KEYWORDS);

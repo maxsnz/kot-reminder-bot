@@ -326,6 +326,41 @@ describe("tryParseMessage", () => {
         expect(s.runAtDates[0]).toBe("2027-01-01");
       });
     });
+
+    test("сокращение: 1 окт в 12:00 позвонить", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("1 окт в 12:00 позвонить", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2026-10-01");
+        expect(s.runAtTimes[0]).toBe("12:00");
+      });
+    });
+
+    test("сокращение: 15 дек в 18:00 корпоратив", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("15 дек в 18:00 корпоратив", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2026-12-15");
+      });
+    });
+
+    test("стиль '5го': 5го марта в 10:00 встреча", () => {
+      withFixedNow(() => {
+        // fixed now = 2026-03-24, March 5 already passed → next year
+        const r = tryParseMessage("5го марта в 10:00 встреча", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2027-03-05");
+        expect(s.runAtTimes[0]).toBe("10:00");
+      });
+    });
+
+    test("стиль '23го': 23го июня в 10 утра петь песню", () => {
+      withFixedNow(() => {
+        const r = tryParseMessage("23го июня в 10 утра петь песню", TZ);
+        const s = oneTime(r);
+        expect(s.runAtDates[0]).toBe("2026-06-23");
+      });
+    });
   });
 
   describe("edge cases", () => {
