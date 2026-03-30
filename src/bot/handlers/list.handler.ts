@@ -1,4 +1,5 @@
 import { Context } from "telegraf";
+import { Markup } from "telegraf";
 import { UserService } from "@/services/user.service";
 import { ScheduleService } from "@/services/schedule.service";
 import { ScheduleSnoozeService } from "@/services/scheduleSnooze.service";
@@ -47,10 +48,13 @@ export class UserCommandsHandler {
     const timezone = user.timezone || "UTC";
     const parts: string[] = [];
 
-    // Add regular schedules
+    // Add regular schedules with numbers
     if (schedules.length > 0) {
       const schedulesText = schedules
-        .map((schedule) => formatScheduleList(schedule, timezone))
+        .map(
+          (schedule, index) =>
+            `${index + 1}. ${formatScheduleList(schedule, timezone)}`
+        )
         .join("\n\n");
       parts.push(`*Активные напоминания:*\n\n${schedulesText}`);
     }
@@ -64,6 +68,33 @@ export class UserCommandsHandler {
     }
 
     const allText = parts.join("\n\n");
-    await this.deps.messageService.sendMarkdownV2(chatId, allText);
+
+    // Build numbered inline buttons for schedules (rows of up to 5)
+    const buttons: ReturnType<typeof Markup.button.callback>[][] = [];
+    if (schedules.length > 0) {
+      let row: ReturnType<typeof Markup.button.callback>[] = [];
+      schedules.forEach((schedule, index) => {
+        row.push(
+          Markup.button.callback(
+            `${index + 1}`,
+            `schedule_view:${schedule.id}`
+          )
+        );
+        if (row.length === 5) {
+          buttons.push(row);
+          row = [];
+        }
+      });
+      if (row.length > 0) {
+        buttons.push(row);
+      }
+    }
+
+    await this.deps.messageService.sendMarkdownV2(chatId, allText, {
+      reply_markup:
+        buttons.length > 0
+          ? { inline_keyboard: buttons }
+          : undefined,
+    });
   }
 }

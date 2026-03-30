@@ -8,6 +8,7 @@ import { TextMessageHandler } from "./handlers/text-message.handler";
 import { VoiceMessageHandler } from "./handlers/voice-message.handler";
 import { UserCommandsHandler } from "./handlers/list.handler";
 import { SnoozeCallbackHandler } from "./handlers/snooze-callback.handler";
+import { ScheduleCallbackHandler } from "./handlers/schedule-callback.handler";
 import { ParserConfirmHandler } from "./handlers/parser-confirm.handler";
 import { UserTextInputProcessor } from "./processors/user-text-input.processor";
 // import { ScheduleActionProcessor } from "./processors/schedule-action.processor";
@@ -84,6 +85,14 @@ export const startBot = (deps: BotDependencies) => {
     focusService: deps.focusService,
   });
 
+  const scheduleCallbackHandler = new ScheduleCallbackHandler({
+    scheduleService: deps.scheduleService,
+    userService: deps.userService,
+    focusService: deps.focusService,
+    chatMessageService: deps.chatMessageService,
+    messageService,
+  });
+
   const parserConfirmHandler = new ParserConfirmHandler({
     userService: deps.userService,
     focusService: deps.focusService,
@@ -138,6 +147,8 @@ export const startBot = (deps: BotDependencies) => {
         snoozeCallbackHandler.handle(ctx);
       } else if (callbackData.startsWith("parser:")) {
         parserConfirmHandler.handle(ctx);
+      } else if (callbackData.startsWith("schedule_")) {
+        scheduleCallbackHandler.handle(ctx);
       }
     }
   });

@@ -14,17 +14,31 @@ Telegram bot for scheduling reminders using natural language (AI). Users send te
 
 ## Request Flow
 
+### Text message (main path)
 ```
 User sends Telegram message
-  → text-message.handler.ts         — saves ChatMessage, enqueues "ai-request" job
-  → ai-request.worker.ts            — calls OpenAI, gets structured JSON, enqueues "ai-result" job
-  → ai-result.worker.ts             — passes result to AiResultProcessor
-  → ai-result.processor.ts          — handles AI action, calls ScheduleActionProcessor
-  → schedule-action.processor.ts    — creates/updates/cancels schedules via ScheduleService
-  → replies to user via MessageService
+  → text-message.handler.ts         — saves ChatMessage
+  → user-text-input.processor.ts    — tries parser first, falls back to AI
+    ├─ Parser succeeds → shows confirmation keyboard (confirm / ai / cancel)
+    │   → parser-confirm.handler.ts  — handles user's choice
+    └─ Parser fails → enqueues "ai-request" job
+        → ai-request.worker.ts      — calls OpenAI, gets structured JSON, enqueues "ai-result" job
+        → ai-result.worker.ts       — passes result to AiResultProcessor
+        → ai-result.processor.ts    — handles AI action, calls ScheduleActionProcessor
+        → schedule-action.processor.ts — creates/updates/cancels schedules via ScheduleService
+        → replies to user via MessageService
+```
+
+### Voice message
+```
+User sends voice message
+  → voice-message.handler.ts        — enqueues "voice-transcription" job
+  → voice-transcription.worker.ts   — transcribes via OpenAI Whisper
+  → user-text-input.processor.ts    — same flow as text (parser → AI fallback)
 ```
 
 Scheduled reminders fire via `schedule-reminder.worker.ts`. Snooze is handled by `schedule-snooze.worker.ts`.
+Custom snooze input is detected via ForceReply + `messageType: snooze_prompt` in ChatMessage.
 
 ## Source Structure
 
@@ -40,25 +54,27 @@ src/
     types.ts
     handlers/
       text-message.handler.ts     — main user message entry point
+      voice-message.handler.ts    — voice message entry point, enqueues transcription
       snooze-callback.handler.ts  — inline keyboard snooze callbacks
+      parser-confirm.handler.ts   — parser confirmation keyboard callbacks (confirm/ai/cancel)
       start.handler.ts
       list.handler.ts
       timezone.handler.ts
       admin.handler.ts
     processors/
+      user-text-input.processor.ts — core message processing: parser → AI fallback, custom snooze detection
       ai-result.processor.ts      — routes AI action to appropriate handler
       schedule-action.processor.ts — executes schedule CRUD
       prompt-new.ts               — (WIP) new simplified context flow
-    state/
-      customSnoozeState.ts        — in-memory store for pending custom snooze input (TTL 5 min)
     parser/
       SPEC.md                     — parser feature spec
       index.ts                    — exports tryParseMessage()
-      tokenizer.ts                — tokenizes user text into typed tokens
+      tokenizer.ts                — tokenizes user text into typed tokens (month abbrevs, ordinal dates)
       parseSnoozeInput.ts         — parses custom snooze duration input (reuses tokenizer)
       fuzzy.ts                    — Levenshtein fuzzy matching
       time-utils.ts               — timezone-aware date helpers
-      masks/                      — parse masks (relative-time, today-time, tomorrow-time, day-of-week)
+      parser.test.ts              — parser unit tests
+      masks/                      — parse masks (relative-time, today-time, tomorrow-time, day-of-week, calendar-date)
   services/
     database.service.ts           — PrismaClient wrapper
     user.service.ts
@@ -66,7 +82,7 @@ src/
     scheduleSnooze.service.ts
     chatMessage.service.ts        — conversation history
     focus.service.ts              — tracks current conversation context per user
-    ai.service.ts                 — OpenAI calls
+    ai.service.ts                 — OpenAI calls + Whisper transcription
     aiRequest.service.ts          — AiRequest CRUD (tracks cost/tokens)
     graphileWorker.service.ts     — Graphile Worker wrapper
     message.service.ts            — Telegram message sending
@@ -76,10 +92,12 @@ src/
     ai-result.worker.ts           — Graphile task: process AI result
     schedule-reminder.worker.ts   — Graphile task: fire reminder to user
     schedule-snooze.worker.ts     — Graphile task: fire snoozed reminder
+    voice-transcription.worker.ts — Graphile task: transcribe voice via Whisper
   utils/
     getNextRunAt.ts               — calculates next run time for recurring schedules
-    formatScheduleList.ts / formatScheduleDate.ts / formatScheduleConfirmation.ts
-    createSnoozeKeyboard.ts       — Telegraf inline keyboard for snooze
+    formatScheduleList.ts / formatScheduleDate.ts / formatScheduleConfirmation.ts / formatSnoozeList.ts
+    createSnoozeKeyboard.ts       — Telegraf inline keyboard for snooze (fixed options + custom "...")
+    getUsername.ts                — extract username from Telegram context
     getUserTime.ts                — formats user local time from UTC + timezone
     costCalculator.ts             — OpenAI token cost calculation
     logger.ts
@@ -109,6 +127,7 @@ Represents the current conversation context for a user. Links to a `Schedule` if
 
 ### ChatMessage
 Stores conversation history. `role`: `user` | `assistant` | `system`. Linked to `Focus` and optionally `Schedule`.
+Optional `messageType` field (enum `MessageType`: `snooze_prompt`) — used to track ForceReply context for custom snooze input.
 
 ### AiRequest
 Tracks every OpenAI call: prompt, response, tokens, cost, status (`queued`→`processing`→`succeeded`/`failed`).
@@ -165,7 +184,4 @@ npx prisma generate      # regenerate client after schema change
 ## TODO
 
 - New simplified context flow (`src/bot/processors/prompt-new.ts` — WIP)
-- Custom snooze time (currently fixed options)
-- Parse user messages by code first, then AI (performance optimization)
-- Voice messages support
 - Custom user instructions
