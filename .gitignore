@@ -25,3 +25,5 @@ dist-server
 *.sw?
 .env
 .adminjs
+.claude/
+.planning/
