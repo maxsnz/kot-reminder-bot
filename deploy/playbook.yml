@@ -31,8 +31,10 @@
     docker_app_project_dir: "{{ project_dir }}"
     docker_app_compose_path: "{{ compose_path }}"
     # Per-project Host alias from github_deploy_key role: git auth идёт
-    # через /root/.ssh/id_ed25519_reminder, без agent forwarding.
-    docker_app_git_repo: "git@github-reminder:maxsnz/kot-reminder-bot.git"
+    # через /root/.ssh/id_ed25519_{{ app_name }}, без agent forwarding.
+    # Alias name = github-{{ app_name }} (см. infra/roles/github_deploy_key
+    # defaults: gh_deploy_host_alias).
+    docker_app_git_repo: "git@github-{{ app_name }}:maxsnz/kot-reminder-bot.git"
     docker_app_git_version: "master"
     # network_mode: host — два контейнера не могут одновременно держать
     # одни и те же сокеты, поэтому zero-downtime отключаем.
