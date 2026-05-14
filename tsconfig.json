@@ -2,7 +2,12 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["jest", "node"],
+    // module: CommonJS оставлен ради ts-jest (jest+ESM в node — болезненно).
+    // Bun и tsx нормально терпят tsconfig.module:CommonJS при package.json
+    // "type": "module" — для исполнения они смотрят на package.json, а
+    // tsconfig.module влияет только на tsc-вывод (которым мы пользуемся
+    // лишь через ts-jest).
+    "types": ["bun", "jest", "node"],
 
     "target": "ESNext",
     "module": "CommonJS",

@@ -1,5 +1,7 @@
 import { defineConfig, env } from "prisma/config";
-import "dotenv/config";
+
+// bun загружает .env автоматически. Раньше тут был `import "dotenv/config";`
+// — больше не нужен.
 
 export default defineConfig({
   datasource: {

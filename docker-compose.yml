@@ -7,24 +7,23 @@ services:
       dockerfile: Dockerfile
     image: reminder
     container_name: reminder
+    # network_mode: host — telegraf долбит api.telegram.org через
+    # long-polling, плюс Prisma/Graphile коннектятся к локальному
+    # Postgres на 127.0.0.1:5432. Хост-режим выбран для единообразия
+    # с другими ботами на этом сервере (tasker, voice) и нативной
+    # связи с loopback-Postgres'ом без NAT.
     network_mode: host
     restart: unless-stopped
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      LOGTAIL_TOKEN: ${LOGTAIL_TOKEN}
-      LOGTAIL_SOURCE: ${LOGTAIL_SOURCE}
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      NODE_ENV: production
+    env_file: .env
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep 'tsx' || exit 1"]
+      # PID 1 в контейнере — это bun-процесс. Проверяем его имя без
+      # внешних утилит (procps не установлен в oven/bun:debian-slim).
+      # Если bun упал — /proc/1/comm временно отсутствует или меняется,
+      # healthcheck сваливает контейнер на unhealthy.
+      test: ["CMD-SHELL", "test \"$(cat /proc/1/comm)\" = bun || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    # Ротация логов настраивается глобально в /etc/docker/daemon.json
+    # (infra/roles/docker), per-service блок не нужен.

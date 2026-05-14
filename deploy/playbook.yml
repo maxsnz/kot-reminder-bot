@@ -10,10 +10,13 @@
     app_name: "kotodom-reminder"
 
     # ---------- Postgres ----------
+    # Per-app DB и user; пароль выводится детерминированно из общего
+    # master-секрета (тот же подход, что у sverka — vault.yml не нужен
+    # для пароля). Доступ только с loopback — network_mode: host у
+    # контейнера + listen-only-localhost у Postgres.
     pg_db_name: "kotodom_reminder"
     pg_db_user: "kotodom_reminder"
 
-    # Deterministic password based on master secret + app_name
     pg_db_password: >-
       {{ (kotodom_master_secret ~ ':' ~ app_name ~ ':pg')
          | hash('sha256')
@@ -27,29 +30,72 @@
     # ---------- Docker App ----------
     docker_app_project_dir: "{{ project_dir }}"
     docker_app_compose_path: "{{ compose_path }}"
-    docker_app_git_repo: "git@github.com:maxsnz/kot-reminder-bot.git"
+    # Per-project Host alias from github_deploy_key role: git auth идёт
+    # через /root/.ssh/id_ed25519_reminder, без agent forwarding.
+    docker_app_git_repo: "git@github-reminder:maxsnz/kot-reminder-bot.git"
     docker_app_git_version: "master"
+    # network_mode: host — два контейнера не могут одновременно держать
+    # одни и те же сокеты, поэтому zero-downtime отключаем.
+    docker_app_enable_zero_downtime: false
+    # Не чистим docker image / builder cache на каждом деплое — делает
+    # отдельный maintenance-таймер (см. infra/BACKLOG.md).
+    docker_app_skip_cleanup: true
+    # Prisma миграции применяются при каждом деплое через `bunx` —
+    # bun-only runtime-образ не содержит node/npx (см. Dockerfile).
     docker_app_enable_prisma_migrations: true
+    docker_app_prisma_migrate_cmd: "bunx prisma migrate deploy"
 
     # ---------- Env vars for .env ----------
     env_vars:
-      NODE_ENV: "production"
+      NODE_ENV: "{{ NODE_ENV | default('production') }}"
+      DATABASE_URL: >-
+        postgresql://{{ pg_db_user }}:{{ pg_db_password }}@127.0.0.1:5432/{{ pg_db_name }}
       TELEGRAM_TOKEN: "{{ TELEGRAM_TOKEN }}"
       OPENAI_API_KEY: "{{ OPENAI_API_KEY }}"
       ADMIN_USERNAME: "{{ ADMIN_USERNAME }}"
       LOGTAIL_TOKEN: "{{ LOGTAIL_TOKEN | default('') }}"
       LOGTAIL_SOURCE: "{{ LOGTAIL_SOURCE | default('') }}"
 
-      DATABASE_URL: >-
-        postgresql://{{ pg_db_user }}:{{ pg_db_password }}@127.0.0.1:5432/{{ pg_db_name }}
-
     # ---------- Vector Logging ----------
     vector_source_name: "kotodom_reminder"
     vector_log_path: "/var/lib/docker/containers/*/*-json.log"
 
-  roles:
-    - { role: env_file, tags: ["env"] }
-    - { role: postgres_db, tags: ["db"] }
-    - { role: docker_app_setup, tags: ["setup"] }
-    - { role: docker_app, tags: ["app"] }
-    - { role: vector_source, tags: ["logs"] }
+  tasks:
+    # Per-project deploy key. Запускается ВРУЧНУЮ один раз на новом сервере:
+    #   make github-key
+    # См. infra/README.md → "First-time deploy key setup". Не входит в
+    # setup/deploy (tag `never`), чтобы не печатать pubkey на каждом прогоне.
+    - name: Apply github_deploy_key role
+      import_role:
+        name: github_deploy_key
+      vars:
+        gh_deploy_key_name: "{{ app_name }}"
+      tags: ["github-key", "never"]
+
+    - name: Apply postgres_db role
+      import_role:
+        name: postgres_db
+      tags: ["db"]
+
+    # Порядок важен: docker_app_setup должен клонировать репо ДО того,
+    # как env_file запишет .env. Иначе project_dir станет непустым (с .env)
+    # и не git-репо, и docker_app_setup откажется работать.
+    - name: Apply docker_app_setup role
+      import_role:
+        name: docker_app_setup
+      tags: ["setup"]
+
+    - name: Apply env_file role
+      import_role:
+        name: env_file
+      tags: ["env"]
+
+    - name: Apply docker_app role
+      import_role:
+        name: docker_app
+      tags: ["app"]
+
+    - name: Apply vector_source role
+      import_role:
+        name: vector_source
+      tags: ["logs"]

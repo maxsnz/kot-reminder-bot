@@ -1,0 +1,23 @@
+.git
+.gitignore
+.env
+.env.example
+node_modules/
+coverage/
+*-debug.log*
+.DS_Store
+
+# Тесты в проде не нужны
+**/*.test.ts
+
+# Документация и dev-планы
+README.md
+CLAUDE.md
+TODO.md
+docs/
+.claude/
+.planning/
+
+# Generated Prisma client — Dockerfile regenerates via `bunx prisma generate`.
+# Чтобы избежать stale кода из локальной dev-машины.
+src/prisma/generated/

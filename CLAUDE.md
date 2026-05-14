@@ -4,7 +4,8 @@ Telegram bot for scheduling reminders using natural language (AI). Users send te
 
 ## Tech Stack
 
-- **Runtime**: Node.js + TypeScript (ESM, `tsx`)
+- **Runtime**: Bun (executes TypeScript natively, no transpiler needed)
+- **Package manager**: pnpm
 - **Bot framework**: Telegraf
 - **ORM**: Prisma with PostgreSQL
 - **Job queue**: Graphile Worker (PostgreSQL-based)
@@ -161,12 +162,13 @@ All services/processors are instantiated in `src/index.ts` and passed via constr
 ## Development Commands
 
 ```bash
-npm run dev       # tsx watch (hot reload)
-npm run server    # production
-npm test          # jest
-npm run test:watch
-npx prisma migrate dev   # create + apply migration
-npx prisma generate      # regenerate client after schema change
+pnpm dev               # bun --watch (hot reload)
+pnpm server            # production
+pnpm test              # jest
+pnpm test:watch
+pnpm db:migrate:dev    # create + apply migration locally
+pnpm db:generate       # regenerate client after schema change
+pnpm db:migrate:deploy # apply pending migrations (used in prod deploy)
 ```
 
 ## Environment Variables
