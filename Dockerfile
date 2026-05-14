@@ -9,6 +9,13 @@ FROM node:22-bookworm-slim AS build
 
 WORKDIR /usr/src/app
 
+# openssl нужен Prisma engines'у (postinstall @prisma/engines иначе
+# фолбэчит на "openssl-1.1.x" и при первом запросе к БД ломается).
+# node:22-bookworm-slim не содержит openssl по умолчанию.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN npm install -g pnpm@10.33.4
 
 COPY package.json pnpm-lock.yaml ./
@@ -24,7 +31,12 @@ COPY src/prisma ./src/prisma
 COPY prisma.config.ts ./
 COPY tsconfig.json ./
 
-RUN pnpm exec prisma generate
+# Prisma 7 в prisma.config.ts через `env("DATABASE_URL")` eager-резолвит
+# переменную даже для `prisma generate` (хотя generator саму БД не
+# трогает). Подсовываем dummy на время этого шага — переменная видна
+# только этому RUN, в финальный образ не пробрасывается.
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
+    pnpm exec prisma generate
 
 
 # ┌─ Runtime stage ─────────────────────────────────────────────────────┐
@@ -36,6 +48,13 @@ RUN pnpm exec prisma generate
 FROM oven/bun:1.3.13-debian
 
 WORKDIR /usr/src/app
+
+# openssl нужен Prisma query engine'у в runtime (engine — native binary,
+# линкуется к libssl системы). Профилактически ставим — bun-debian не
+# гарантирует наличие openssl с правильной версией.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Деп-граф приходит из build-стадии — гарантирует, что движки Prisma
 # уже скачаны под нужную платформу.
