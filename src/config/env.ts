@@ -9,8 +9,6 @@ interface EnvironmentConfig {
   DATABASE_URL: string;
   TELEGRAM_TOKEN: string;
   OPENAI_API_KEY: string;
-  LOGTAIL_TOKEN?: string;
-  LOGTAIL_SOURCE?: string;
   ADMIN_USERNAME: string;
 }
 
@@ -37,14 +35,6 @@ function validateEnv(): EnvironmentConfig {
     OPENAI_API_KEY: process.env.OPENAI_API_KEY!,
     ADMIN_USERNAME: process.env.ADMIN_USERNAME!,
   };
-
-  if (process.env.LOGTAIL_TOKEN) {
-    config.LOGTAIL_TOKEN = process.env.LOGTAIL_TOKEN;
-  }
-
-  if (process.env.LOGTAIL_SOURCE) {
-    config.LOGTAIL_SOURCE = process.env.LOGTAIL_SOURCE;
-  }
 
   return config;
 }

@@ -14,7 +14,6 @@
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
-    "@logtail/pino": "^0.5.7",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "@prisma/client-runtime-utils": "^7.0.0",

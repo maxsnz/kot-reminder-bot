@@ -55,12 +55,14 @@
       TELEGRAM_TOKEN: "{{ TELEGRAM_TOKEN }}"
       OPENAI_API_KEY: "{{ OPENAI_API_KEY }}"
       ADMIN_USERNAME: "{{ ADMIN_USERNAME }}"
-      LOGTAIL_TOKEN: "{{ LOGTAIL_TOKEN | default('') }}"
-      LOGTAIL_SOURCE: "{{ LOGTAIL_SOURCE | default('') }}"
 
     # ---------- Vector Logging ----------
+    # Per-app pipeline: docker_logs → JSON parse → dedicated BS Logs
+    # source. Reuses the source token previously fed by @logtail/pino.
     vector_source_name: "kotodom_reminder"
-    vector_log_path: "/var/lib/docker/containers/*/*-json.log"
+    vector_source_container_name: "reminder"
+    vector_source_bs_token: "{{ bs_logs_token }}"
+    vector_source_bs_host: "{{ bs_logs_host }}"
 
   tasks:
     # Per-project deploy key. Запускается ВРУЧНУЮ один раз на новом сервере:
