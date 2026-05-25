@@ -111,6 +111,8 @@ async function main() {
 
   await graphileWorkerService.start(taskList);
 
+  logger.info("Reminder bot started");
+
   const gracefulShutdown = async (signal: string) => {
     logger.info({ signal }, "Received signal, shutting down gracefully...");
     await graphileWorkerService.stop();

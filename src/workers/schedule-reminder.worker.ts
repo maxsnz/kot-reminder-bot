@@ -68,7 +68,7 @@ export function createScheduleReminderTask(
       if (sentMessage) {
         logger.info(
           { userId: user.id, scheduleId: schedule.id, message },
-          `Sent message to user ${user.username} for schedule`
+          `Sent message to user ${user.username}: ${message}`
         );
       } else {
         logger.warn(
