@@ -60,9 +60,9 @@ export function createScheduleSnoozeTask(
             userId: user.id,
             snoozeId: snooze.id,
             scheduleId: schedule.id,
-            message,
+            reminderText: message,
           },
-          `Sent snooze reminder message to user`
+          `Sent snooze reminder: ${message}`
         );
       } else {
         logger.warn(

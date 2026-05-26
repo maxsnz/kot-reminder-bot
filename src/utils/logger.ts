@@ -12,6 +12,11 @@ export const logger: Logger = isProd
   ? pino({
       level: "info",
       timestamp: pino.stdTimeFunctions.isoTime,
+      // Write the log text to `message` (not Pino's default `msg`) so Better
+      // Stack renders it directly in the Message column — Vector seeds
+      // `.message` with the raw stdout line and only a same-named key
+      // overwrites it. Matches the 3d-model-bot logger convention.
+      messageKey: "message",
       base: {
         app: packageJson.name,
         version: packageJson.version,
@@ -21,6 +26,7 @@ export const logger: Logger = isProd
   : pino({
       level: "debug",
       timestamp: pino.stdTimeFunctions.isoTime,
+      messageKey: "message",
       base: {
         app: packageJson.name,
         version: packageJson.version,
@@ -32,6 +38,7 @@ export const logger: Logger = isProd
           colorize: true,
           translateTime: "HH:MM:ss",
           ignore: "pid,hostname",
+          messageKey: "message",
         },
       },
     });
