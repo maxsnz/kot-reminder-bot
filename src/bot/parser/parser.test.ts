@@ -1,6 +1,7 @@
 import { tokenize } from "./tokenizer";
 import { findClosest } from "./fuzzy";
 import { tryParseMessage } from "./index";
+import { hasRecurrenceMarker } from "./recurrence";
 
 const TZ = "Europe/Moscow"; // UTC+3
 
@@ -49,6 +50,44 @@ describe("fuzzy – findClosest", () => {
 
   test("no match beyond threshold", () => {
     expect(findClosest("среда", dict)).toBeNull();
+  });
+});
+
+// ── recurrence ────────────────────────────────────────────────────────────────
+
+describe("hasRecurrenceMarker", () => {
+  test.each([
+    "каждый день",
+    "каждую неделю",
+    "каждое утро",
+    "каждые 2 часа",
+    "каждый понедельник",
+    "ежедневно",
+    "еженедельно",
+    "ежемесячно",
+    "ежегодно",
+    "по будням",
+    "по выходным",
+    "по понедельникам",
+    "по средам",
+    "по утрам",
+    "по вечерам",
+    "КАЖДЫЙ ДЕНЬ", // case-insensitive
+    "напомни каждый день в 15:30 - принять таблетки", // mixed with other text
+  ])("detects: %s", (text) => {
+    expect(hasRecurrenceMarker(text)).toBe(true);
+  });
+
+  test.each([
+    "",
+    "завтра в 10:00 позвонить маме",
+    "через 30 минут пицца",
+    "в 14:00 забрать посылку",
+    "по работе позвонить", // "по" not followed by a plural recurrence target
+    "в понедельник в 9:00 зубной", // singular weekday, one-time
+    "день рождения 23 июня", // "день" alone is not "каждый день"
+  ])("does not detect: %s", (text) => {
+    expect(hasRecurrenceMarker(text)).toBe(false);
   });
 });
 
@@ -387,6 +426,50 @@ describe("tryParseMessage", () => {
         const s = oneTime(r);
         expect(s.runAtDates[0]).toBe("2026-06-23");
       });
+    });
+  });
+
+  describe("recurrence → no_match (LLM)", () => {
+    test("каждый день в 15:30 - принять таблетки", () => {
+      const r = tryParseMessage("каждый день в 15:30 - принять таблетки", TZ);
+      expect(r.ok).toBe(false);
+      if (r.ok) return;
+      expect(r.reason).toBe("no_match");
+    });
+
+    test("каждую пятницу в 18:00 встреча", () => {
+      const r = tryParseMessage("каждую пятницу в 18:00 встреча", TZ);
+      expect(r.ok).toBe(false);
+      if (r.ok) return;
+      expect(r.reason).toBe("no_match");
+    });
+
+    test("каждые 2 часа выпить воды", () => {
+      const r = tryParseMessage("каждые 2 часа выпить воды", TZ);
+      expect(r.ok).toBe(false);
+      if (r.ok) return;
+      expect(r.reason).toBe("no_match");
+    });
+
+    test("ежедневно в 9:00 зарядка", () => {
+      const r = tryParseMessage("ежедневно в 9:00 зарядка", TZ);
+      expect(r.ok).toBe(false);
+      if (r.ok) return;
+      expect(r.reason).toBe("no_match");
+    });
+
+    test("по понедельникам в 10:00 планёрка", () => {
+      const r = tryParseMessage("по понедельникам в 10:00 планёрка", TZ);
+      expect(r.ok).toBe(false);
+      if (r.ok) return;
+      expect(r.reason).toBe("no_match");
+    });
+
+    test("по будням в 8:00 подъём", () => {
+      const r = tryParseMessage("по будням в 8:00 подъём", TZ);
+      expect(r.ok).toBe(false);
+      if (r.ok) return;
+      expect(r.reason).toBe("no_match");
     });
   });
 

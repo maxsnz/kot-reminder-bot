@@ -1,6 +1,7 @@
 import { tokenize } from "./tokenizer";
 import { findMask } from "./masks/index";
 import { localDateTimeToUtc } from "./time-utils";
+import { hasRecurrenceMarker } from "./recurrence";
 import type { ParsedResult } from "./masks/index";
 
 export type { ParsedResult };
@@ -20,6 +21,12 @@ export function tryParseMessage(
   text: string,
   userTimezone: string
 ): TryParseResult {
+  // Recurring schedules ("каждый день", "по понедельникам", "ежедневно", ...)
+  // are out of scope for the parser — route them to the LLM.
+  if (hasRecurrenceMarker(text)) {
+    return { ok: false, reason: "no_match" };
+  }
+
   const tokenized = tokenize(text);
 
   if (!tokenized.ok) {
