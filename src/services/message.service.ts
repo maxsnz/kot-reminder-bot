@@ -55,7 +55,7 @@ function escapeMarkdownV2PreservingCodeBlocks(text: string): string {
   // Escape text parts and combine with code blocks
   return parts
     .map((part) =>
-      part.type === "text" ? escapeMarkdownV2(part.content) : part.content
+      part.type === "text" ? escapeMarkdownV2(part.content) : part.content,
     )
     .join("");
 }
@@ -73,7 +73,7 @@ export class MessageService {
   async sendMessage(
     chatId: number,
     text: string,
-    options?: SendMessageOptions
+    options?: SendMessageOptions,
   ): Promise<Message.TextMessage | null> {
     try {
       return await this.bot.telegram.sendMessage(chatId, text, options);
@@ -95,7 +95,7 @@ export class MessageService {
           errorCode,
           messagePreview: text.substring(0, 100),
         },
-        "Failed to send message"
+        "Failed to send message",
       );
 
       return null;
@@ -114,11 +114,10 @@ export class MessageService {
   async sendMarkdownV2(
     chatId: number,
     text: string,
-    options?: Omit<SendMessageOptions, "parse_mode">
+    options?: Omit<SendMessageOptions, "parse_mode">,
   ): Promise<Message.TextMessage | null> {
     try {
       const escapedText = escapeMarkdownV2PreservingCodeBlocks(text);
-      console.log(escapedText);
       return await this.bot.telegram.sendMessage(chatId, escapedText, {
         ...options,
         parse_mode: "MarkdownV2",
@@ -150,7 +149,7 @@ export class MessageService {
             errorCode,
             messagePreview: text.substring(0, 100),
           },
-          "MarkdownV2 parsing error, falling back to plain text"
+          "MarkdownV2 parsing error, falling back to plain text",
         );
 
         try {
@@ -166,7 +165,7 @@ export class MessageService {
               chatId,
               messagePreview: text.substring(0, 100),
             },
-            "Failed to send message even with plain text fallback"
+            "Failed to send message even with plain text fallback",
           );
           return null;
         }
@@ -180,7 +179,7 @@ export class MessageService {
           errorCode,
           messagePreview: text.substring(0, 100),
         },
-        "Failed to send MarkdownV2 message"
+        "Failed to send MarkdownV2 message",
       );
 
       return null;
@@ -190,7 +189,7 @@ export class MessageService {
   async sendAsCodeBlock(
     chatId: number,
     text: string,
-    options?: Omit<SendMessageOptions, "parse_mode">
+    options?: Omit<SendMessageOptions, "parse_mode">,
   ): Promise<Message.TextMessage | null> {
     return await this.bot.telegram.sendMessage(chatId, `\`\`\`${text}\`\`\``, {
       ...options,
@@ -201,7 +200,7 @@ export class MessageService {
   async sendJson(
     chatId: number,
     json: any,
-    options?: Omit<SendMessageOptions, "parse_mode">
+    options?: Omit<SendMessageOptions, "parse_mode">,
   ): Promise<Message.TextMessage | null> {
     return await this.bot.telegram.sendMessage(
       chatId,
@@ -209,7 +208,7 @@ export class MessageService {
       {
         ...options,
         parse_mode: "MarkdownV2",
-      }
+      },
     );
   }
 
@@ -225,7 +224,7 @@ export class MessageService {
     chatId: number,
     text: string,
     inlineKeyboard: InlineKeyboardMarkup,
-    options?: Omit<SendMessageOptions, "reply_markup">
+    options?: Omit<SendMessageOptions, "reply_markup">,
   ): Promise<Message.TextMessage | null> {
     try {
       return await this.bot.telegram.sendMessage(chatId, text, {
@@ -250,7 +249,7 @@ export class MessageService {
           errorCode,
           messagePreview: text.substring(0, 100),
         },
-        "Failed to send message with inline keyboard"
+        "Failed to send message with inline keyboard",
       );
 
       return null;
@@ -265,7 +264,7 @@ export class MessageService {
    */
   async removeInlineKeyboard(
     chatId: number,
-    messageId: number
+    messageId: number,
   ): Promise<boolean> {
     try {
       await this.bot.telegram.editMessageReplyMarkup(
@@ -275,7 +274,7 @@ export class MessageService {
         {
           inline_keyboard: [],
           // reply_markup: undefined,
-        }
+        },
       );
       return true;
     } catch (error) {
@@ -285,7 +284,7 @@ export class MessageService {
           chatId,
           messageId,
         },
-        "Failed to remove inline keyboard"
+        "Failed to remove inline keyboard",
       );
       return false;
     }
