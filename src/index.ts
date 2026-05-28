@@ -80,6 +80,7 @@ async function main() {
       aiRequestService,
       aiService,
       graphileWorkerService,
+      messageService,
       bot
     ),
     "ai-result": createAiResultTask(

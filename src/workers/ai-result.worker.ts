@@ -3,10 +3,14 @@ import { AiRequestService } from "@/services/aiRequest.service";
 import { AiResultProcessor } from "@/bot/processors/ai-result.processor";
 import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
+import { classifyAiError } from "@/utils/classifyAiError";
 
 interface AiResultJobData {
   aiRequestId: string;
 }
+
+const USER_ERROR_MESSAGE =
+  "🤖 Не удалось обработать запрос. Попробуйте ещё раз чуть позже.";
 
 export function createAiResultTask(
   aiRequestService: AiRequestService,
@@ -62,30 +66,20 @@ export function createAiResultTask(
         "Failed to process AI result"
       );
 
-      // Check if this is a parsing error (permanent, shouldn't retry)
-      const isParsingError =
-        errorMessage.includes("Invalid time value") ||
-        errorMessage.includes("validation failed") ||
-        errorMessage.includes("Response validation failed") ||
-        errorMessage.toLowerCase().includes("invalid date") ||
-        errorMessage.toLowerCase().includes("parsing");
+      const classification = classifyAiError(errorMessage);
 
-      // Only send error message on first attempt
-      const attemptNumber = (helpers.job as any)?.attempt_number ?? 1;
-      if (attemptNumber === 1) {
+      // Notify the user once, on the first execution of this job. See
+      // ai-request.worker.ts for the same rationale.
+      const isFirstAttempt = helpers.job.attempts <= 1;
+      if (isFirstAttempt) {
         try {
           if (!aiRequest) {
             aiRequest = await aiRequestService.findById(aiRequestId);
           }
-          if (aiRequest) {
-            const promptData = aiRequest.prompt as any;
-            const chatId = promptData?.chatId as number;
-            if (chatId) {
-              await messageService.sendMessage(
-                chatId,
-                `Ошибка: ${errorMessage}`
-              );
-            }
+          const promptData = aiRequest?.prompt as any;
+          const chatId = promptData?.chatId as number | undefined;
+          if (chatId) {
+            await messageService.sendMessage(chatId, USER_ERROR_MESSAGE);
           }
         } catch (sendError) {
           logger.error(
@@ -101,20 +95,16 @@ export function createAiResultTask(
         }
       }
 
-      // For parsing errors, don't retry - return instead of throwing
-      if (isParsingError) {
+      // Permanent errors won't recover on retry — stop the chain.
+      if (classification === "permanent") {
         logger.warn(
-          {
-            aiRequestId,
-            errorMessage,
-          },
-          "Parsing error detected, not retrying"
+          { aiRequestId, errorMessage, classification },
+          "Permanent AI-result error, not retrying"
         );
-        // TODO: retry query with error details
-        return; // Don't throw, so Graphile Worker won't retry
+        return;
       }
 
-      // For transient errors, allow retries
+      // Transient: let Graphile Worker retry.
       throw error;
     }
   };

@@ -3,17 +3,23 @@ import { Telegraf } from "telegraf";
 import { AiRequestService } from "@/services/aiRequest.service";
 import { AIService } from "@/services/ai.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
+import { MessageService } from "@/services/message.service";
 import { logger } from "@/utils/logger";
 import { calculateCost } from "@/utils/costCalculator";
+import { classifyAiError } from "@/utils/classifyAiError";
 
 interface AiRequestJobData {
   aiRequestId: string;
 }
 
+const USER_ERROR_MESSAGE =
+  "🤖 Не удалось обработать запрос. Попробуйте ещё раз чуть позже.";
+
 export function createAiRequestTask(
   aiRequestService: AiRequestService,
   aiService: AIService,
   graphileWorkerService: GraphileWorkerService,
+  messageService: MessageService,
   bot: Telegraf
 ): Task {
   return async (payload: unknown, helpers) => {
@@ -24,6 +30,8 @@ export function createAiRequestTask(
     logger.info({ aiRequestId }, "Processing AI request");
 
     let typingInterval: NodeJS.Timeout | null = null;
+    // Hoisted so the catch block can reach the user even if the AI call throws.
+    let chatId: number | undefined;
 
     try {
       const aiRequest = await aiRequestService.findById(aiRequestId);
@@ -48,7 +56,7 @@ export function createAiRequestTask(
       }
 
       const prompt = promptData.prompt as string;
-      const chatId = promptData.chatId as number | undefined;
+      chatId = promptData.chatId as number | undefined;
 
       if (chatId) {
         bot.telegram.sendChatAction(chatId, "typing").catch((err) => {
@@ -56,7 +64,7 @@ export function createAiRequestTask(
         });
 
         typingInterval = setInterval(() => {
-          bot.telegram.sendChatAction(chatId, "typing").catch((err) => {
+          bot.telegram.sendChatAction(chatId!, "typing").catch((err) => {
             logger.warn({ err, chatId }, "Failed to send typing action");
           });
         }, 4000);
@@ -130,13 +138,7 @@ export function createAiRequestTask(
         "Failed to process AI request"
       );
 
-      // Check if this is a parsing error (permanent, shouldn't retry)
-      const isParsingError =
-        errorMessage.includes("validation failed") ||
-        errorMessage.includes("Response validation failed") ||
-        errorMessage.toLowerCase().includes("invalid date") ||
-        errorMessage.toLowerCase().includes("parsing") ||
-        errorMessage.includes("JSON.parse");
+      const classification = classifyAiError(errorMessage);
 
       try {
         await aiRequestService.markFailed(aiRequestId, errorMessage);
@@ -153,19 +155,39 @@ export function createAiRequestTask(
         );
       }
 
-      // For parsing errors, don't retry - return instead of throwing
-      if (isParsingError) {
-        logger.warn(
-          {
-            aiRequestId,
-            errorMessage,
-          },
-          "Parsing error detected in AI request, not retrying"
-        );
-        return; // Don't throw, so Graphile Worker won't retry
+      // Notify the user once, on the first execution of this job. If we retry,
+      // we stay silent — either the retry succeeds (user gets the real answer)
+      // or it gives up (the first-attempt message already warned them).
+      const isFirstAttempt = helpers.job.attempts <= 1;
+      if (isFirstAttempt && chatId) {
+        try {
+          await messageService.sendMessage(chatId, USER_ERROR_MESSAGE);
+        } catch (sendError) {
+          logger.error(
+            {
+              err:
+                sendError instanceof Error
+                  ? sendError
+                  : new Error(String(sendError)),
+              aiRequestId,
+              chatId,
+            },
+            "Failed to send error message to user"
+          );
+        }
       }
 
-      // For transient errors (network, etc.), allow retries
+      // Permanent errors (quota, billing, auth, parsing) won't recover on
+      // retry — return without throwing so Graphile Worker stops trying.
+      if (classification === "permanent") {
+        logger.warn(
+          { aiRequestId, errorMessage, classification },
+          "Permanent AI error, not retrying"
+        );
+        return;
+      }
+
+      // Transient: let Graphile Worker retry.
       throw error;
     } finally {
       if (typingInterval) {
