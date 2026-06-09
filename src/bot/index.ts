@@ -22,7 +22,6 @@ export const startBot = (deps: BotDependencies) => {
   }
 
   const bot = new Telegraf(deps.telegramToken);
-  logger.info("Bot created");
 
   const messageService = new MessageService(bot);
 
@@ -113,7 +112,7 @@ export const startBot = (deps: BotDependencies) => {
   bot.command("version", (ctx) => adminHandler.handleVersion(ctx));
   bot.command("settings", (ctx) => adminHandler.handleSettings(ctx));
   bot.command("removeallmytasks", (ctx) =>
-    adminHandler.handleRemoveAllMyTasks(ctx)
+    adminHandler.handleRemoveAllMyTasks(ctx),
   );
 
   bot.on(message("voice"), (ctx) => voiceMessageHandler.handle(ctx));
@@ -156,8 +155,15 @@ export const startBot = (deps: BotDependencies) => {
   bot.launch().catch((e) => {
     logger.error(
       { err: e instanceof Error ? e : new Error(String(e)) },
-      "Failed to launch bot"
+      "Failed to launch bot — exiting so Docker restarts the container",
     );
+    // Don't linger half-alive: the Graphile worker would keep the process
+    // (and the `bun in PID 1` healthcheck) green while the bot is dead, so
+    // scheduled reminders still fire but commands silently stop working.
+    // Graceful shutdown resolves launch(), so this only fires on a genuine
+    // fatal failure — exit non-zero and let `restart: unless-stopped` bring
+    // the whole app back cleanly.
+    process.exit(1);
   });
 
   return { bot, userTextInputProcessor };

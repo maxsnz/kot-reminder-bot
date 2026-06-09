@@ -19,6 +19,7 @@ import { createVoiceTranscriptionTask } from "./workers/voice-transcription.work
 import { AiResultProcessor } from "./bot/processors/ai-result.processor";
 import { ScheduleActionProcessor } from "./bot/processors/schedule-action.processor";
 import { logger } from "./utils/logger";
+import { writeFileSync } from "node:fs";
 
 async function main() {
   const databaseService = new DatabaseService();
@@ -113,6 +114,22 @@ async function main() {
   await graphileWorkerService.start(taskList);
 
   logger.info("Reminder bot started");
+
+  // Liveness heartbeat: refresh a file every 15s so the container healthcheck
+  // can confirm the event loop is actually running — not just that a `bun`
+  // process exists as PID 1 (which stays true even if the loop is wedged). The
+  // bot-dead case is handled by process.exit(1) in startBot()'s launch().catch;
+  // this guards against a silently stalled event loop.
+  const HEARTBEAT_FILE = "/tmp/reminder-heartbeat";
+  const writeHeartbeat = () => {
+    try {
+      writeFileSync(HEARTBEAT_FILE, String(Date.now()));
+    } catch (err) {
+      logger.warn({ err }, "Failed to write heartbeat file");
+    }
+  };
+  writeHeartbeat();
+  setInterval(writeHeartbeat, 15_000).unref();
 
   const gracefulShutdown = async (signal: string) => {
     logger.info({ signal }, "Received signal, shutting down gracefully...");

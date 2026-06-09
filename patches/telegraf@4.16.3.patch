@@ -1,0 +1,24 @@
+diff --git a/lib/core/network/client.js b/lib/core/network/client.js
+index 25fbbbb47c7f88e83ae26f629e5ae1a0c141725c..917c29cffed32a52bb9494bdd696251117aba623 100644
+--- a/lib/core/network/client.js
++++ b/lib/core/network/client.js
+@@ -245,7 +245,18 @@ async function answerToWebhook(response, payload, options) {
+     return true;
+ }
+ function redactToken(error) {
+-    error.message = error.message.replace(/\/(bot|user)(\d+):[^/]+\//, '/$1$2:[REDACTED]/');
++    // Under Bun, native fetch errors can have a read-only `message`, so the
++    // reassignment below throws "Attempted to assign to readonly property".
++    // That TypeError replaces the original FetchError and, since it's neither
++    // a FetchError nor a TelegramError, the polling loop treats it as fatal
++    // (kills the bot) instead of retrying. Best-effort redaction: keep the
++    // original error intact if its message can't be rewritten.
++    try {
++        error.message = error.message.replace(/\/(bot|user)(\d+):[^/]+\//, '/$1$2:[REDACTED]/');
++    }
++    catch (_a) {
++        // message is read-only — leave the original error untouched.
++    }
+     throw error;
+ }
+ class ApiClient {

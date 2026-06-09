@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  telegraf@4.16.3:
+    hash: 1ae93f41f0b9f267ce41db85729ce5bdbd79407bc9dc6f61fa6a8d8264069633
+    path: patches/telegraf@4.16.3.patch
+
 importers:
 
   .:
@@ -43,7 +48,7 @@ importers:
         version: 7.8.0(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.9.3)
       telegraf:
         specifier: ^4.16.3
-        version: 4.16.3
+        version: 4.16.3(patch_hash=1ae93f41f0b9f267ce41db85729ce5bdbd79407bc9dc6f61fa6a8d8264069633)
       zod:
         specifier: ^4.1.13
         version: 4.4.3
@@ -4208,7 +4213,7 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.2.9
 
-  telegraf@4.16.3:
+  telegraf@4.16.3(patch_hash=1ae93f41f0b9f267ce41db85729ce5bdbd79407bc9dc6f61fa6a8d8264069633):
     dependencies:
       '@telegraf/types': 7.1.0
       abort-controller: 3.0.0

@@ -43,6 +43,9 @@
     "onlyBuiltDependencies": [
       "@prisma/engines",
       "unrs-resolver"
-    ]
+    ],
+    "patchedDependencies": {
+      "telegraf@4.16.3": "patches/telegraf@4.16.3.patch"
+    }
   }
 }

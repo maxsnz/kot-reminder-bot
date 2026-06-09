@@ -16,11 +16,12 @@ services:
     restart: unless-stopped
     env_file: .env
     healthcheck:
-      # PID 1 в контейнере — это bun-процесс. Проверяем его имя без
-      # внешних утилит (procps не установлен в oven/bun:debian-slim).
-      # Если bun упал — /proc/1/comm временно отсутствует или меняется,
-      # healthcheck сваливает контейнер на unhealthy.
-      test: ["CMD-SHELL", "test \"$(cat /proc/1/comm)\" = bun || exit 1"]
+      # Проверяем свежесть liveness-heartbeat, который приложение обновляет
+      # каждые 15с (см. src/index.ts), а не просто наличие bun в PID 1:
+      # процесс может быть жив, а event loop — завис, и старый healthcheck
+      # этого не ловил. Если heartbeat не обновлялся >1 мин → unhealthy.
+      # find/-mmin есть в oven/bun:debian (procps/ps — нет).
+      test: ["CMD-SHELL", "test -n \"$(find /tmp/reminder-heartbeat -mmin -1 2>/dev/null)\" || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
