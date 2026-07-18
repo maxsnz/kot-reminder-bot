@@ -25,7 +25,7 @@ export function createScheduleReminderTask(
 ): Task {
   return async (payload: unknown, helpers) => {
     const jobData = payload as ScheduleReminderJobData;
-    const { scheduleId, timezone } = jobData;
+    const { scheduleId, timezone: payloadTimezone } = jobData;
 
     // logger.info({ scheduleId }, "Processing schedule reminder");
 
@@ -50,6 +50,10 @@ export function createScheduleReminderTask(
       }
 
       const user = schedule.user;
+
+      // Prefer the user's current timezone over the one baked into the job
+      // payload, so reminders follow the user after a timezone change.
+      const timezone = user.timezone || payloadTimezone;
 
       // Create inline keyboard with snooze buttons
       const inlineKeyboard = createSnoozeKeyboard(schedule.id);

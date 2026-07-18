@@ -418,6 +418,28 @@ export class ScheduleService {
     }
   }
 
+  // Re-sync worker jobs for all active schedules of a user.
+  // Call this when the user's timezone changes so pending jobs are
+  // recomputed for the new timezone (both runAt and the job payload).
+  async resyncAllForUser(userId: string, timezone: string): Promise<void> {
+    const schedules = await this.findActiveByUserId(userId);
+    for (const schedule of schedules) {
+      try {
+        await this.syncJobsForSchedule(schedule.id, timezone);
+      } catch (error) {
+        logger.error(
+          { err: error, scheduleId: schedule.id, userId },
+          "Failed to resync worker job for schedule"
+        );
+        // Continue with the rest even if one fails
+      }
+    }
+    logger.info(
+      { userId, timezone, count: schedules.length },
+      "Resynced worker jobs for user after timezone change"
+    );
+  }
+
   // Helper method to get timezone from schedule
   private async getTimezoneFromSchedule(
     scheduleId: string

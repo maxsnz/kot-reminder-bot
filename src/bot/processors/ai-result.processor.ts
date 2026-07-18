@@ -86,6 +86,12 @@ export class AiResultProcessor {
         await this.deps.userService.updateUser(user.id, {
           timezone: result.timezone,
         });
+        // Recompute all pending reminder jobs for the new timezone,
+        // otherwise existing schedules keep firing at their old absolute time.
+        await this.deps.scheduleService.resyncAllForUser(
+          user.id,
+          result.timezone
+        );
       }
 
       if (result.action === "show_user_schedules") {
