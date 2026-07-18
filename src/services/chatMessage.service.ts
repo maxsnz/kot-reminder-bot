@@ -77,4 +77,23 @@ export class ChatMessageService {
       orderBy: { createdAt: "asc" },
     });
   }
+
+  /**
+   * Timestamp of the last time a reminder for this schedule was delivered.
+   * A reminder delivery is recorded as a system message whose text equals the
+   * schedule's message (see ReminderDeliveryService.deliver); confirmations,
+   * snooze prompts, etc. carry different text and are excluded. Used to detect
+   * occurrences that were missed after a timezone change.
+   */
+  async getLastReminderDeliveryAt(
+    scheduleId: string,
+    message: string
+  ): Promise<Date | null> {
+    const last = await this.prisma.chatMessage.findFirst({
+      where: { scheduleId, role: MessageRole.system, text: message },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    return last?.createdAt ?? null;
+  }
 }

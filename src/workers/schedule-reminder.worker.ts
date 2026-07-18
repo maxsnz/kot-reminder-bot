@@ -1,13 +1,9 @@
 import { Task } from "graphile-worker";
 import { ScheduleService } from "@/services/schedule.service";
-import { ChatMessageService } from "@/services/chatMessage.service";
-import { FocusService } from "@/services/focus.service";
-import { UserService } from "@/services/user.service";
 import { GraphileWorkerService } from "@/services/graphileWorker.service";
-import { MessageService } from "@/services/message.service";
+import { ReminderDeliveryService } from "@/services/reminderDelivery.service";
 import { getNextRunAt } from "@/utils/getNextRunAt";
-import { MessageRole, StatusKind } from "@/prisma/generated/client";
-import { createSnoozeKeyboard } from "@/utils/createSnoozeKeyboard";
+import { StatusKind } from "@/prisma/generated/client";
 import { logger } from "@/utils/logger";
 
 interface ScheduleReminderJobData {
@@ -17,17 +13,12 @@ interface ScheduleReminderJobData {
 
 export function createScheduleReminderTask(
   scheduleService: ScheduleService,
-  chatMessageService: ChatMessageService,
-  focusService: FocusService,
-  userService: UserService,
-  graphileWorkerService: GraphileWorkerService,
-  messageService: MessageService
+  reminderDeliveryService: ReminderDeliveryService,
+  graphileWorkerService: GraphileWorkerService
 ): Task {
   return async (payload: unknown, helpers) => {
     const jobData = payload as ScheduleReminderJobData;
     const { scheduleId, timezone: payloadTimezone } = jobData;
-
-    // logger.info({ scheduleId }, "Processing schedule reminder");
 
     try {
       const schedule = await scheduleService.findById(scheduleId);
@@ -55,47 +46,7 @@ export function createScheduleReminderTask(
       // payload, so reminders follow the user after a timezone change.
       const timezone = user.timezone || payloadTimezone;
 
-      // Create inline keyboard with snooze buttons
-      const inlineKeyboard = createSnoozeKeyboard(schedule.id);
-
-      const message = `${schedule.emoji ?? ""} ${schedule.message}`;
-
-      // Send message with inline keyboard buttons
-      const sentMessage = await messageService.sendMessageWithInlineKeyboard(
-        user.chatId,
-        message,
-        inlineKeyboard
-      );
-
-      const telegramMessageId = sentMessage?.message_id;
-
-      if (sentMessage) {
-        logger.info(
-          { userId: user.id, scheduleId: schedule.id, reminderText: message },
-          `Sent message to user ${user.username}: ${message}`
-        );
-      } else {
-        logger.warn(
-          { userId: user.id, scheduleId: schedule.id },
-          "Failed to send message to user for schedule, continuing anyway"
-        );
-      }
-
-      const focus = await focusService.findByScheduleId(schedule.id);
-
-      await chatMessageService.createMessage({
-        userId: user.id,
-        telegramChatId: user.chatId.toString(),
-        telegramMessageId: telegramMessageId?.toString() ?? null,
-        role: MessageRole.system,
-        text: schedule.message,
-        scheduleId: schedule.id,
-        focusId: focus?.id ?? null,
-      });
-
-      if (focus) {
-        await userService.setFocus(user.id, focus.id);
-      }
+      await reminderDeliveryService.deliver(schedule, user);
 
       const currentTime = new Date();
       const nextRunAt = getNextRunAt(currentTime, schedule, timezone);
@@ -117,8 +68,6 @@ export function createScheduleReminderTask(
           "Schedule ended (no more runs)"
         );
       }
-
-      // logger.info({ scheduleId }, "Schedule reminder processed successfully");
     } catch (error) {
       logger.error(
         {

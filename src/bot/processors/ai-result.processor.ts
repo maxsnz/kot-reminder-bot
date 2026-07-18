@@ -5,6 +5,7 @@ import { ChatMessageService } from "@/services/chatMessage.service";
 import { ScheduleService } from "@/services/schedule.service";
 import { MessageService } from "@/services/message.service";
 import { ScheduleActionProcessor } from "./schedule-action.processor";
+import { ReminderDeliveryService } from "@/services/reminderDelivery.service";
 import { MessageRole } from "@/prisma/generated/client";
 import { formatScheduleConfirmation } from "@/utils/formatScheduleConfirmation";
 import { formatScheduleList } from "@/utils/formatScheduleList";
@@ -17,6 +18,7 @@ export interface AiResultProcessorDependencies {
   scheduleService: ScheduleService;
   scheduleActionProcessor: ScheduleActionProcessor;
   messageService: MessageService;
+  reminderDeliveryService: ReminderDeliveryService;
 }
 
 export class AiResultProcessor {
@@ -89,6 +91,12 @@ export class AiResultProcessor {
         // Recompute all pending reminder jobs for the new timezone,
         // otherwise existing schedules keep firing at their old absolute time.
         await this.deps.scheduleService.resyncAllForUser(
+          user.id,
+          result.timezone
+        );
+        // Deliver reminders whose re-anchored time now lies in the past
+        // (e.g. it became 12:00 local, so today's 11:00 reminder was missed).
+        await this.deps.reminderDeliveryService.fireMissedForUser(
           user.id,
           result.timezone
         );

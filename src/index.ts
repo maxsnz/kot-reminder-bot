@@ -11,6 +11,7 @@ import { AiRequestService } from "./services/aiRequest.service";
 import { GraphileWorkerService } from "./services/graphileWorker.service";
 import { SettingService } from "./services/setting.service";
 import { MessageService } from "./services/message.service";
+import { ReminderDeliveryService } from "./services/reminderDelivery.service";
 import { createAiRequestTask } from "./workers/ai-request.worker";
 import { createAiResultTask } from "./workers/ai-result.worker";
 import { createScheduleReminderTask } from "./workers/schedule-reminder.worker";
@@ -58,6 +59,14 @@ async function main() {
 
   const messageService = new MessageService(bot);
 
+  const reminderDeliveryService = new ReminderDeliveryService(
+    messageService,
+    chatMessageService,
+    focusService,
+    userService,
+    scheduleService
+  );
+
   // Initialize schedule action processor
   const scheduleActionProcessor = new ScheduleActionProcessor({
     scheduleService,
@@ -73,6 +82,7 @@ async function main() {
     scheduleService,
     scheduleActionProcessor,
     messageService,
+    reminderDeliveryService,
   });
 
   // Start Graphile Worker with task list
@@ -91,11 +101,8 @@ async function main() {
     ),
     "schedule-reminder": createScheduleReminderTask(
       scheduleService,
-      chatMessageService,
-      focusService,
-      userService,
-      graphileWorkerService,
-      messageService
+      reminderDeliveryService,
+      graphileWorkerService
     ),
     "schedule-snooze": createScheduleSnoozeTask(
       scheduleSnoozeService,
