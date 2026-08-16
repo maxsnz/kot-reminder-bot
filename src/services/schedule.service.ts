@@ -415,6 +415,10 @@ export class ScheduleService {
       );
     } else {
       await this.endSchedule(scheduleId);
+      logger.info(
+        { scheduleId, timezone },
+        "Schedule ended during sync (no future run in this timezone)"
+      );
     }
   }
 
